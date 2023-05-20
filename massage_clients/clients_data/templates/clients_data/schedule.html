@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Schedule</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    {% for day, clients in schedule_data %}
+        <h2>{{ day }}</h2>
+        <table>
+            <tr>
+                <th>Time</th>
+                <th>Client's Name</th>
+                <th>Type of Massage</th>
+            </tr>
+            {% for client in clients %}
+                <tr>
+                    <td>{{ client.visit_time }}</td>
+                    <td>{{ client.name }}</td>
+                    <td>{{ client.massage_type }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No clients scheduled</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+</body>
+</html>
+
+<!-- In this HTML code example, we iterate over the schedule_data dictionary,
+which contains the sorted schedule data.
+For each day, we display a table with three columns: Time, Client's Name,
+and Type of Massage. We use the Django template language to access
+the client's information within the table.
+
+If there are no clients scheduled for a particular day, we display
+a row indicating that there are no clients scheduled.
+
+You can further customize the HTML and CSS styles to match your desired design.
+
+With these changes, the schedule view should generate the schedule page
+ displaying the tables for each day of the week based on the actual clients' visit days and time. -->
