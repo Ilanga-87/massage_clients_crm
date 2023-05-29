@@ -1,0 +1,75 @@
+{% extends 'clients_data/base.html' %}
+{% load static %}
+
+{% block client_details %}
+    <div class="team-item text-left">
+        <div class="row g-0 bg-light rounded overflow-hidden">
+            <div class="col-12 col-sm-5 h-100 d-flex flex-column p-4">
+                <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age }}</h3>
+                <h5 class="fw-normal text-primary mb-1">Main contact: <span class="text-secondary">{{ object.phone_number }}</span></h5>
+                <h5 class="fw-normal text-primary mb-1">Additional contact: <span class="text-secondary">{{ object.another_contact }}</span></h5>
+            </div>
+            <div class="col-12 col-sm-7 h-100 d-flex flex-column">
+                <div class="p-4">
+                    <h5 class="text-secondary m-1">Тип массажа: <span class="small text-dark fw-normal m-0">{{ object.massage_type }}</span></h5>
+                    <h5 class="text-secondary m-1">Количество сеансов: <span class="small text-dark fw-normal m-0">{{ object.therapy_duration }}</span></h5>
+                    <h5 class="text-secondary m-1">Стоимость сеанса: <span class="small text-dark fw-normal m-0">{{ object.one_visit_price }}</span></h5>
+                    <h5 class="text-secondary m-1">Стоимость курса: <span class="small text-dark fw-normal m-0">{{ object.one_visit_price }}</span></h5>
+                    <h5 class="text-secondary m-1">Дни сеансов: <span class="small text-dark fw-normal m-0">{{ object.visit_days }}</span></h5>
+                    <h5 class="text-secondary m-1">Время: <span class="small text-dark fw-normal m-0">{{ object.visit_time|time:"H:i" }}</span></h5>
+                    <h5 class="text-secondary m-1">Статус: <span class="small text-dark fw-normal m-0">{{ object.is_archived|yesno:"Неактивен, Активен" }} </span></h5>
+                </div>
+            </div>
+            <div class="col-12 col-sm-12 h-100 d-flex flex-column">
+                <div class="d-flex mt-auto border-top p-4">
+                    <span><h5>Жалобы и заболевания: </h5>{{ object.illnesses }}</span>
+                </div>
+            </div>
+            <div class="col-12 col-sm-12 h-100 d-flex flex-column">
+                <div class="d-flex mt-auto border-top p-4">
+                    <span><h5>Дополнительная информация: </h5>{{ object.more_info }}</span>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+<!--<div class="team-item">-->
+<!--    <div class="g-0 bg-light rounded overflow-hidden">-->
+<!--        <div class="col-12 col-sm-5 h-100">-->
+<!--            <img class="img-fluid h-100" src="{% static 'img/team-1.jpg' %}" style="object-fit: cover;">-->
+<!--        </div>-->
+<!--        <div class="col-12 col-sm-4 h-100">-->
+<!--            <div class="mt-auto p-4">-->
+<!--                <h3>{{ object.name }}, {{ object.sex }}, {{ object.age }}</h3>-->
+<!--                <h6 class="fw-normal fst-italic text-primary mb-1">Main contact: {{ object.phone_number }}</h6>-->
+<!--                <h6 class="fw-normal fst-italic text-primary mb-1">Additional contact: {{ object.another_contact }}</h6>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="col-12 col-sm-4 h-100 d-flex flex-column">-->
+<!--            <div class="mt-auto p-4">-->
+<!--                <h5 class="fw-normal m-0">{{ object.massage_type }}</h5>-->
+<!--                <h5 class="fw-normal m-0">{{ object.therapy_duration }}</h5>-->
+<!--                <h5 class="fw-normal m-0">{{ object.one_visit_price }}</h5>-->
+<!--                <h5 class="fw-normal m-0">{{ object.visit_days }}</h5>-->
+<!--                <h5 class="fw-normal m-0">{{ object.visit_time }}</h5>-->
+<!--                <h5 class="fw-normal m-0">{{ object.more_info }}</h5>-->
+<!--                <h5 class="fw-normal m-0">{{ object.is_archived }}</h5>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--            <div class="d-flex mt-auto border-top p-4">-->
+<!--                <span>{{ object.illnesses }}</span>-->
+<!--            </div>-->
+<!--            <div class="d-flex mt-auto border-top p-4">-->
+<!--                <span>{{ object.more_info }}</span>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--<h1 class="text-white mb-md-1 border-bottom border-5">{{ object.name }}</h1>-->
+<!--<div class="pt-2">-->
+<!--    <span class='lead'>{{ object.phone_number }} </span>-->
+<!--    <div class='body'>{{ object.sex|safe }} </div>-->
+<!--</div>-->
+{% endblock %}

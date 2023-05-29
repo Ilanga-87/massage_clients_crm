@@ -1,6 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
+from django.views.generic.edit import CreateView
+from django.views.generic.detail import DetailView
+from django.views.generic import ListView
+
+from django_tables2 import SingleTableMixin
+from django_filters.views import FilterView
+
 from .forms import ClientForm
 from .models import Client
+from .tables import ClientHTMxTable
+from .filters import ClientFilter
+
+
+class CreateClient(CreateView):
+    model = Client
+    form_class = ClientForm
+    template_name = "clients_data/create.html"
+    # success_page = 'client' # TODO: change name
+
+
+class SingleClient(DetailView):
+    model = Client
+
+
+class AllClients(ListView):
+    model = Client
 
 
 def create_client(request):
@@ -177,3 +201,18 @@ from the database and passes them to the template for rendering.
 
 Now, let's update the HTML template to include the checkbox column and the "Archive" button:
 """
+
+
+class ClientHTMxTableView(SingleTableMixin, FilterView):
+    table_class = ClientHTMxTable
+    queryset = Client.objects.all()
+    filterset_class = ClientFilter
+    paginate_by = 15
+
+    def get_template_names(self):
+        if self.request.htmx:
+            template_name = "client_table_partial.html"
+        else:
+            template_name = "client_table_htmx.html"
+
+        return template_name
