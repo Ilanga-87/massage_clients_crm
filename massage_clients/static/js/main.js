@@ -90,6 +90,7 @@
         }
     });
 
+    // Add visit button
 
     // Testimonials carousel
     $(".testimonial-carousel").owlCarousel({

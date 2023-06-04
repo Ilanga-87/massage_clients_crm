@@ -1,42 +1,127 @@
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
-from django.views.generic.edit import CreateView
+from django.views import View
+from django.views.generic.edit import CreateView, FormMixin, SingleObjectMixin
 from django.views.generic.detail import DetailView
 from django.views.generic import ListView
+from django.urls import reverse
 
-from django_tables2 import SingleTableMixin
+from django_tables2 import SingleTableMixin, SingleTableView
 from django_filters.views import FilterView
 
-from .forms import ClientForm
-from .models import Client
+from .forms import ClientForm, VisitForm, VisitFormSet
+from .models import Client, Visit
 from .tables import ClientHTMxTable
 from .filters import ClientFilter
 
 
-class CreateClient(CreateView):
+class CreateClientView(CreateView):
     model = Client
     form_class = ClientForm
     template_name = "clients_data/create.html"
-    # success_page = 'client' # TODO: change name
 
 
-class SingleClient(DetailView):
+class CreateClientVisitsView(CreateView):
     model = Client
+    form_class = ClientForm
+    template_name = "clients_data/create.html"
 
 
-class AllClients(ListView):
+class SingleClientView2(DetailView, FormMixin):
     model = Client
+    form_class = VisitForm
+    template_name = 'clients_data/client_detail.html'
 
+    def get_success_url(self):
+        return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
 
-def create_client(request):
-    if request.method == 'POST':
-        form = ClientForm(request.POST)
+    def get_context_data(self, **kwargs):
+        context = super(SingleClientView2, self).get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        return context
+
+    # def get_context_data(self, **kwargs):
+    #     context = super(SingleClientView, self).get_context_data(**kwargs)
+    #     # client = self.get_object()
+    #     # visits = [
+    #     #     {'visit_date': client.visit_date, 'visit_time': client.visit_time}
+    #     # ]
+    #     # VisitFormSet = formset_factory(VisitForm, extra=1)
+    #     formset = VisitFormSet(prefix='visit-formset')
+    #     context['formset'] = formset
+    #     return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
         if form.is_valid():
-            form.save()
-            return redirect('client_list')  # Replace 'client_list' with the URL name for the client list page
-    else:
-        form = ClientForm()
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
-    return render(request, 'clients_data/client_list.html', {'form': form})
+    # def post(self, request, *args, **kwargs):
+    #     self.object = self.get_object()
+    #     # VisitFormSet = formset_factory(VisitForm, extra=1)
+    #     formset = VisitFormSet(request.POST, prefix='visit-formset')
+    #
+    #     if formset.is_valid():
+    #         return self.form_valid(formset)
+    #     else:
+    #         return self.form_invalid(formset)
+
+    def form_valid(self, form):
+        # Here, we would record the user's interest using the message
+        # passed in form.cleaned_data['message']
+        return super(SingleClientView2, self).form_valid(form)
+
+    # def form_valid(self, formset):
+    #     client = self.get_object()
+    #     cleaned_data = formset.cleaned_data[0]
+    #     client.visit_date = cleaned_data.get('visit_date')
+    #     client.visit_time = cleaned_data.get('visit_time')
+    #     client.save()
+    #     return redirect(self.get_success_url())
+
+    # def form_invalid(self, formset):
+    #     return self.render_to_response(self.get_context_data(formset=formset))
+
+
+class SingleClientDisplay(DetailView):
+    model = Client
+
+    def get_context_data(self, **kwargs):
+        context = super(SingleClientDisplay, self).get_context_data(**kwargs)
+        context['form'] = VisitForm()
+        return context
+
+
+class CreateVisitView(CreateView, SingleObjectMixin):
+    template_name = 'clients_data/client_detail.html'
+    form_class = VisitForm
+    model = Visit
+
+    def post(self, request, *args, **kwargs):
+        # if not request.user.is_authenticated:
+        #     return HttpResponseForbidden()
+        self.object = self.get_object()
+        return super(CreateVisitView, self).post(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
+
+
+class SingleClientDetailView(View):
+    def get(self, request, *args, **kwargs):
+        view = SingleClientDisplay.as_view()
+        return view(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        view = CreateVisitView.as_view()
+        return view(request, *args, **kwargs)
+
+
+class AllClientsView(ListView):
+    model = Client
 
 
 def client_list(request):
@@ -203,7 +288,8 @@ Now, let's update the HTML template to include the checkbox column and the "Arch
 """
 
 
-class ClientHTMxTableView(SingleTableMixin, FilterView):
+class ClientHTMxTableView2(SingleTableMixin, FilterView):
+    model = Client
     table_class = ClientHTMxTable
     queryset = Client.objects.all()
     filterset_class = ClientFilter
@@ -211,8 +297,26 @@ class ClientHTMxTableView(SingleTableMixin, FilterView):
 
     def get_template_names(self):
         if self.request.htmx:
-            template_name = "client_table_partial.html"
+            template_name = "clients_data/client_table_partial.html"
         else:
-            template_name = "client_table_htmx.html"
+            template_name = "clients_data/client_table_htmx.html"
+
+        return template_name
+
+
+class ClientHTMxTableView(SingleTableView):
+    model = Client
+    # queryset = Client.objects.all()
+    table_class = ClientHTMxTable
+    filterset_class = ClientFilter
+
+    # paginate_by = 15
+    # template_name = "clients_data/client_table_htmx.html"
+
+    def get_template_names(self):
+        if self.request.htmx:
+            template_name = "clients_data/client_table_partial.html"
+        else:
+            template_name = "clients_data/client_table_htmx.html"
 
         return template_name

@@ -11,16 +11,16 @@ class ClientFilter(django_filters.FilterSet):
 
     class Meta:
         model = Client
-        fields = ['query']
+        fields = ['name', 'massage_type']
 
     def universal_search(self, queryset, name, value):
-        if value.replace(".", "", 1).isdigit():
-            value = Decimal(value)
-            return Client.objects.filter(
-                Q(price=value) | Q(cost=value)
-            )
+        # if value.replace(".", "", 1).isdigit():
+        #     value = Decimal(value)
+        #     return Client.objects.filter(
+        #         Q(price=value) | Q(cost=value)
+        #     )
         # TODO: which fields can need digit check? If none, it is better to delete this check.
         #  Anyway fields must be changed
         return Client.objects.filter(
-            Q(name__icontains=value) | Q(category__icontains=value)
+            Q(name__icontains=value) | Q(massage_type__icontains=value)
         )

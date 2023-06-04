@@ -3,75 +3,63 @@
 {% load crispy_forms_tags %}
 
 {% block form %}
-<h1 class="mb-4">Add A Client</h1>
-
+<h1 class="mb-4">Add A New Client</h1>
                         <form method="POST">
                           {% csrf_token %}
+                            {% if form.errors %}
+                            {% for error in form.errors %}
+                            <p>{{ error }}</p>
+                                                            {% endfor %}
+                                {% endif %}
                             <div class="form-row">
                                 <div class="form-group col-md-4 mb-0">
                                     {{ form.name|as_crispy_field }}
                                 </div>
-                                <div class="form-group col-md-4 mb-0">
+                                <div class="form-group col-md-3 mb-0">
                                     {{ form.phone_number|as_crispy_field }}
                                 </div>
-                                <div class="form-group col-md-2 mb-0">
+                                <div class="form-group col-md-3 mb-0">
+                                    {{ form.another_contact|as_crispy_field }}
+                                </div>
+                                <div class="form-group col-md-1 mb-0">
                                     {{ form.sex|as_crispy_field }}
                                 </div>
-                                <div class="form-group col-md-2 mb-0">
+                                <div class="form-group col-md-1 mb-0">
                                     {{ form.age|as_crispy_field }}
                                 </div>
                             </div>
-                            {{ form.another_contact|as_crispy_field }}
-                            {{ form.illnesses|as_crispy_field }}
                             <div class="form-row">
-                                <div class="form-group col-md-6 mb-0">
-                                    {{ form.massage_type|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-6 mb-0">
-                                    {{ form.therapy_duration|as_crispy_field }}
+                                <div class="col">
+                                <div class="form-group col-md-12 mb-0 row-fluid">
+                                {{ form.illnesses|as_crispy_field }}
+                                </div></div>
+                                <div class="col">
+                                        <div class="form-group col-md-12 mb-0 row-fluid">
+                                            {{ form.massage_type|as_crispy_field }}
+                                        </div>
+                                        <div class="form-group col-md-12 mb-0 row-fluid">
+                                            {{ form.therapy_duration|as_crispy_field }}
+                                        </div>
+
                                 </div>
                             </div>
+
                             <div class="form-row">
                                 <div class="form-group col-md-4 mb-0">
                                     {{ form.one_visit_price|as_crispy_field }}
                                 </div>
+
                                 <div class="form-group col-md-4 mb-0">
-                                    {{ form.visit_days|as_crispy_field }}
+                                    {{ form.first_visit_date|as_crispy_field }}
                                 </div>
                                 <div class="form-group col-md-4 mb-0">
-                                    {{ form.visit_time|as_crispy_field }}
+                                    {{ form.first_visit_time|as_crispy_field }}
                                 </div>
                             </div>
                             {{ form.more_info|as_crispy_field }}
-<!--                            <div class="row g-3">-->
-                                <div class="col-12 col-sm-12">
-<!--                                    <div class="form-control bg-light border-0" style="height: 55px;">-->
 
-<!--&lt;!&ndash;                                    <input type="text" class="form-control bg-light border-0" placeholder="Your Name" style="height: 55px;">&ndash;&gt;-->
-<!--                                </div>-->
-<!--                                <div class="col-12 col-sm-6">-->
-<!--                                    <input type="email" class="form-control bg-light border-0" placeholder="Your Email" style="height: 55px;">-->
-<!--                                </div>-->
-<!--                              <div class="col-12 col-sm-6">-->
-<!--                                    <input type="text" class="form-control bg-light border-0" placeholder="Your Name" style="height: 55px;">-->
-<!--                                </div>-->
-<!--                                <div class="col-12 col-sm-6">-->
-<!--                                    <input type="email" class="form-control bg-light border-0" placeholder="Your Email" style="height: 55px;">-->
-<!--                                </div>-->
-<!--                                <div class="col-12 col-sm-6">-->
-<!--                                    <div class="date" id="date" data-target-input="nearest">-->
-<!--                                        <input type="text"-->
-<!--                                            class="form-control bg-light border-0 datetimepicker-input"-->
-<!--                                            placeholder="Date" data-target="#date" data-toggle="datetimepicker" style="height: 55px;">-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                                <div class="col-12 col-sm-6">-->
-<!--                                    <div class="time" id="time" data-target-input="nearest">-->
-<!--                                        <input type="text"-->
-<!--                                            class="form-control bg-light border-0 datetimepicker-input"-->
-<!--                                            placeholder="Time" data-target="#time" data-toggle="datetimepicker" style="height: 55px;">-->
-<!--                                    </div>-->
-<!--                                </div>-->
+
+                            <div class="col-12 col-sm-12">
                                 <div class="col-12">
                                     <button class="btn btn-primary w-100 py-3" type="submit">Add</button>
                                 </div>
