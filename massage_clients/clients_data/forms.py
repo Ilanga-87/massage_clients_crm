@@ -43,9 +43,9 @@ class VisitForm(forms.ModelForm):
 
         widgets = {
             'visit_date': forms.DateInput(
-                attrs={'type': 'date', 'placeholder': 'dd.MM.yyyy (DOB)', 'class': 'form-control'}),
-            'visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm', 'class': 'form-control'})
+                attrs={'type': 'date', 'placeholder': 'dd.MM.yyyy (DOB)'}),
+            'visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm'})
         }
 
 
-VisitFormSet = inlineformset_factory(Client, Visit, form=VisitForm, extra=1,)
+VisitFormSet = formset_factory(VisitForm, extra=1)
