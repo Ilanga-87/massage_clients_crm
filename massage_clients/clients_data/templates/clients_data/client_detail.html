@@ -11,6 +11,7 @@
                 <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age|default_if_none:"-" }}</h3>
                 <h5 class="fw-normal text-primary mb-1">Телефон: <span class="text-secondary">{{ object.phone_number }}</span></h5>
                 <h5 class="fw-normal text-primary mb-1">Дополнительный контакт: <span class="text-secondary">{{ object.another_contact }} {% if not object.another_contact %} ---------- {% endif %}</span></h5>
+                <p><a href="{% url 'client_update' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3 mt-3">Изменить</a></p>
             </div>
 
             <div class="col-12 col-sm-7 h-100 d-flex flex-column">
@@ -18,24 +19,25 @@
                     <span><h5>Жалобы и заболевания: </h5>{{ object.illnesses }} {% if not object.illnesses %} ---------- {% endif %}</span>
                 </div>
             </div>
-            <div class="col-12 col-sm-12 h-100 d-flex flex-column">
+            <div class="col-12 col-sm-12h-100 d-flex flex-column">
                 <div class="d-flex mt-auto border-top p-4">
                     <span><h5>Дополнительная информация: </h5>{{ object.more_info }} {% if not object.more_info %} ---------- {% endif %}</span>
                 </div>
             </div>
             <div class="col-12 col-sm-12 h-100 d-flex flex-column">
-                <div class="d-flex mt-auto border-top p-4">
-                    <span><h5>Визиты: </h5>
-                        {% for visit in object.visit_client.all %}
-                            <div>{{ visit.visit_date }}: {{ visit.visit_time }}</div>
-                            <div>{{ visit.massage_type }}: {{ visit.visit_price }}</div>
-                            <div>{{ visit.more_info }}</div>
-                        {% empty %}
-                            <p>Нет назначенных визитов</p>
-                        {% endfor %}
+            <div class="d-flex mt-auto border-top p-4">
+                <span><h5>Визиты: </h5>
+                    {% for visit in object.visit_client.all %}
+                    <hr>
+                        <div class="mt-2">{{ visit.visit_date }}: {{ visit.visit_time }}</div>
+                        <div>{{ visit.massage_type }}: {{ visit.visit_price }}</div>
+                        <div>{{ visit.more_info }}</div>
+                    {% empty %}
+                        <p>Нет назначенных визитов</p>
+                    {% endfor %}
 
-                    </span>
-                </div>
+                </span>
+            </div>
         <div class="col-12 align-items-center text-center"> <p>
         <a href="{% url 'client_visits_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Добавить визиты</a>
     </p></div>

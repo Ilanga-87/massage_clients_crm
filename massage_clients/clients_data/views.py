@@ -1,11 +1,8 @@
 from django.http import HttpResponseRedirect
-from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView)
+from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse
 from django.db.models import Min, F
-
-import datetime
-from datetime import datetime
 
 from .forms import ClientForm, VisitFormSet
 from .models import Client, Visit
@@ -65,7 +62,10 @@ class ClientVisitsEditView(SingleObjectMixin, FormView):
         return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
 
 
-
+class SingleClientUpdateView(UpdateView):
+    model = Client
+    form_class = ClientForm
+    template_name_suffix = "_update_form"
 
 
 

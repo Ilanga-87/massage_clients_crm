@@ -2,10 +2,10 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-{% block title %} Новый клиент {% endblock %}
+{% block title %} {{ client.name|title}} — редактирование {% endblock %}
 
 {% block form %}
-<h1 class="mb-4">Добавить нового клиента</h1>
+<h1 class="mb-4">{{ client.name|title}} — редактирование </h1>
                         <form method="POST">
                           {% csrf_token %}
                             {% if form.errors %}
@@ -40,7 +40,7 @@
                             </div>
                             <div class="col-12 col-sm-12">
                                 <div class="col-12">
-                                    <button class="btn btn-primary w-50 py-3" type="submit">Добавить</button>
+                                    <button class="btn btn-primary w-50 py-3" type="submit">Подтвердить</button>
                                 </div>
                             </div>
                         </form>
