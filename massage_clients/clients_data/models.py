@@ -4,8 +4,8 @@ from django.shortcuts import reverse
 
 class Client(models.Model):
     GENDER_CHOICES = [
-        ('M', 'Male'),
-        ('F', 'Female'),
+        ('М', 'Мужской'),
+        ('Ж', 'Женский'),
     ]
 
     name = models.CharField(max_length=100)
@@ -14,13 +14,7 @@ class Client(models.Model):
     sex = models.CharField(max_length=1, choices=GENDER_CHOICES)
     age = models.PositiveIntegerField(blank=True, null=True)
     illnesses = models.TextField(blank=True)
-    massage_type = models.CharField(max_length=100)
-    therapy_duration = models.PositiveIntegerField(blank=True, default=1)
-    one_visit_price = models.PositiveIntegerField(blank=True, null=True)
-    first_visit_date = models.DateField(null=True)
-    first_visit_time = models.TimeField(null=True)
     more_info = models.TextField(blank=True)
-    is_archived = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -30,6 +24,20 @@ class Client(models.Model):
 
 
 class Visit(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    visit_date = models.DateField(null=True)
-    visit_time = models.TimeField(null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='visit_client')
+    visit_date = models.DateField()
+    visit_time = models.TimeField()
+    massage_type = models.CharField(max_length=100)
+    visit_price = models.PositiveIntegerField()
+    more_info = models.TextField(blank=True)
+
+    def get_closest_to(self, target):
+        closest_greater_qs = self.filter(visit_date__gte=target).order_by('visit_date')
+
+        try:
+            closest_greater = closest_greater_qs[0]
+
+        except IndexError:
+            raise self.model.DoesNotExist("There is no closest object"
+                                          " because there are no objects.")
+        return closest_greater

@@ -1,51 +1,48 @@
 from django import forms
-from django.forms import formset_factory, inlineformset_factory
+from django.forms import inlineformset_factory
 from .models import Client, Visit
 
 
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
-        exclude = ('is_archived', )
+        fields = ('name', 'phone_number', 'another_contact', 'sex', 'age', 'illnesses', 'more_info')
 
         labels = {
-            'name': 'Name',
-            'phone_number': 'Phone Number',
-            'another_contact': 'Another Contact',
-            'sex': 'Sex',
-            'age': 'Age',
-            'illnesses': 'Illnesses',
-            'massage_type': 'Massage Type',
-            'therapy_duration': 'Therapy Duration',
-            'one_visit_price': 'One Visit Price',
-            'first_visit_date': 'First Visit Date',
-            'first_visit_time': 'First Visit Time',
-            'more_info': 'More Information',
+            'name': 'Имя',
+            'phone_number': 'Номер телефона',
+            'another_contact': 'Доп. контакт',
+            'sex': 'Пол',
+            'age': 'Возраст',
+            'illnesses': 'Жалобы и заболевания',
+            'more_info': 'Детали',
         }
 
         widgets = {
-            'illnesses': forms.Textarea(attrs={'rows': 5, 'cols': 4}),
-            'more_info': forms.Textarea(attrs={'rows': 4, 'cols': 4}),
-            'first_visit_date': forms.DateInput(attrs={'type': 'date', 'placeholder': 'dd.MM.yyyy (DOB)', 'class': 'form-control'}),
-            'first_visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm', 'class': 'form-control'})
+            'illnesses': forms.Textarea(attrs={'rows': 3, 'cols': 4}),
+            'more_info': forms.Textarea(attrs={'rows': 3, 'cols': 4}),
         }
 
 
 class VisitForm(forms.ModelForm):
     class Meta:
         model = Visit
-        fields = ('client', 'visit_date', 'visit_time')
+        fields = ('visit_date', 'visit_time', 'massage_type', 'visit_price', 'more_info')
 
         labels = {
-            'visit_date': 'Visit Date',
-            'visit_time': 'Visit Time',
+            'visit_date': 'Дата приёма',
+            'visit_time': 'Время приёма',
+            'massage_type': 'Тип массажа',
+            'visit_price': 'Цена приёма',
+            'more_info': 'Детали'
         }
 
         widgets = {
             'visit_date': forms.DateInput(
-                attrs={'type': 'date', 'placeholder': 'dd.MM.yyyy (DOB)'}),
-            'visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm'})
+                attrs={'type': 'date', 'placeholder': 'dd.MM.yyyy'}),
+            'visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm'}),
+            'more_info': forms.Textarea(attrs={'rows': 2, 'cols': 4})
         }
 
 
-VisitFormSet = formset_factory(VisitForm, extra=1)
+VisitFormSet = inlineformset_factory(Client, Visit, form=VisitForm, extra=10)

@@ -5,7 +5,7 @@ from .models import Client, Visit
 
 
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ["name", "phone_number", "massage_type"]
+    list_display = ["name", "phone_number"]
     empty_value_display = "-empty-"
 
 

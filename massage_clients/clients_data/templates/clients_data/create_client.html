@@ -2,15 +2,17 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block title %} Новый клиент {% endblock %}
+
 {% block form %}
-<h1 class="mb-4">Add A New Client</h1>
+<h1 class="mb-4">Добавить нового клиента</h1>
                         <form method="POST">
                           {% csrf_token %}
                             {% if form.errors %}
-                            {% for error in form.errors %}
-                            <p>{{ error }}</p>
-                                                            {% endfor %}
-                                {% endif %}
+                                {% for error in form.errors %}
+                                 <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
                             <div class="form-row">
                                 <div class="form-group col-md-4 mb-0">
                                     {{ form.name|as_crispy_field }}
@@ -29,39 +31,16 @@
                                 </div>
                             </div>
                             <div class="form-row">
-                                <div class="col">
-                                <div class="form-group col-md-12 mb-0 row-fluid">
-                                {{ form.illnesses|as_crispy_field }}
-                                </div></div>
-                                <div class="col">
-                                        <div class="form-group col-md-12 mb-0 row-fluid">
-                                            {{ form.massage_type|as_crispy_field }}
-                                        </div>
-                                        <div class="form-group col-md-12 mb-0 row-fluid">
-                                            {{ form.therapy_duration|as_crispy_field }}
-                                        </div>
-
+                                <div class="form-group col-md-6 mb-0 row-fluid">
+                                    {{ form.illnesses|as_crispy_field }}
+                                </div>
+                                <div class="form-group col-md-6 mb-0 row-fluid">
+                                     {{ form.more_info|as_crispy_field }}
                                 </div>
                             </div>
-
-                            <div class="form-row">
-                                <div class="form-group col-md-4 mb-0">
-                                    {{ form.one_visit_price|as_crispy_field }}
-                                </div>
-
-                                <div class="form-group col-md-4 mb-0">
-                                    {{ form.first_visit_date|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-4 mb-0">
-                                    {{ form.first_visit_time|as_crispy_field }}
-                                </div>
-                            </div>
-                            {{ form.more_info|as_crispy_field }}
-
-
                             <div class="col-12 col-sm-12">
                                 <div class="col-12">
-                                    <button class="btn btn-primary w-100 py-3" type="submit">Add</button>
+                                    <button class="btn btn-primary w-50 py-3" type="submit">Добавить</button>
                                 </div>
                             </div>
                         </form>

@@ -1,19 +1,14 @@
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
-from django.views import View
-from django.views.generic.edit import CreateView, FormMixin, SingleObjectMixin
-from django.views.generic.detail import DetailView
-from django.views.generic import ListView
+from django.http import HttpResponseRedirect
+from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView)
+from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse
-from django.forms import formset_factory
+from django.db.models import Min, F
 
-from django_tables2 import SingleTableMixin, SingleTableView
-from django_filters.views import FilterView
+import datetime
+from datetime import datetime
 
-from .forms import ClientForm, VisitForm, VisitFormSet
+from .forms import ClientForm, VisitFormSet
 from .models import Client, Visit
-from .tables import ClientHTMxTable
-from .filters import ClientFilter
 
 
 class CreateClientView(CreateView):
@@ -22,146 +17,195 @@ class CreateClientView(CreateView):
     template_name = "clients_data/create_client.html"
 
 
-class CreateVisitsView(CreateView):
-    model = Visit
-    form_class = VisitForm
-    template_name = "clients_data/create_visit.html"
-    success_url = '/clients-data/clients-list'
-
-    def get_success_url(self):
-        self.success_url = '/clients-data/clients-list'
-        return self.success_url
-
-    def get(self, request, *args, **kwargs):
-        formset = formset_factory(VisitForm, extra=1)
-        formset = formset()
-        return render(request, self.template_name, {'formset': formset})
-
-    def post(self, request, *args, **kwargs):
-        visit_form = VisitForm(request.POST)
-        formset = formset_factory(VisitForm, extra=1)
-        formset = formset(request.POST)
-        print("One")
-
-        if not visit_form.is_valid():
-            print(visit_form.errors)
-            print("UNSuccess form")
-
-        if formset.is_valid():
-            print("Success formset")
-
-        if formset.is_valid():
-            print("Visit form is valid")
-            for form in formset:
-                print("Visit form 1")
-                form.instance.visit = visit_form.instance
-                form.save()
-
-        return HttpResponseRedirect(self.get_success_url())
-
-
-class SingleClientView2(DetailView, FormMixin):
+class SingleClientDisplayView(DetailView):
     model = Client
-    form_class = VisitForm
-    template_name = 'clients_data/client_detail.html'
-
-    def get_success_url(self):
-        return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
-
-    def get_context_data(self, **kwargs):
-        context = super(SingleClientView2, self).get_context_data(**kwargs)
-        context['form'] = self.get_form()
-        return context
-
-    # def get_context_data(self, **kwargs):
-    #     context = super(SingleClientView, self).get_context_data(**kwargs)
-    #     # client = self.get_object()
-    #     # visits = [
-    #     #     {'visit_date': client.visit_date, 'visit_time': client.visit_time}
-    #     # ]
-    #     # VisitFormSet = formset_factory(VisitForm, extra=1)
-    #     formset = VisitFormSet(prefix='visit-formset')
-    #     context['formset'] = formset
-    #     return context
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    # def post(self, request, *args, **kwargs):
-    #     self.object = self.get_object()
-    #     # VisitFormSet = formset_factory(VisitForm, extra=1)
-    #     formset = VisitFormSet(request.POST, prefix='visit-formset')
-    #
-    #     if formset.is_valid():
-    #         return self.form_valid(formset)
-    #     else:
-    #         return self.form_invalid(formset)
-
-    def form_valid(self, form):
-        # Here, we would record the user's interest using the message
-        # passed in form.cleaned_data['message']
-        return super(SingleClientView2, self).form_valid(form)
-
-    # def form_valid(self, formset):
-    #     client = self.get_object()
-    #     cleaned_data = formset.cleaned_data[0]
-    #     client.visit_date = cleaned_data.get('visit_date')
-    #     client.visit_time = cleaned_data.get('visit_time')
-    #     client.save()
-    #     return redirect(self.get_success_url())
-
-    # def form_invalid(self, formset):
-    #     return self.render_to_response(self.get_context_data(formset=formset))
-
-
-class SingleClientDisplay(DetailView):
-    model = Client
-
-    def get_context_data(self, **kwargs):
-        context = super(SingleClientDisplay, self).get_context_data(**kwargs)
-        context['form'] = VisitForm()
-        return context
-
-
-class CreateVisitView(CreateView, SingleObjectMixin):
-    template_name = 'clients_data/client_detail.html'
-    form_class = VisitForm
-    model = Visit
-    # success_url = reverse('single_client', kwargs={'pk': self.kwargs['pk'], 'name': self.kwargs['name']})
-
-    # def post(self, request, *args, **kwargs):
-    #     print("One")
-    #     # if not request.user.is_authenticated:
-    #     #     return HttpResponseForbidden()
-    #     # self.object = self.get_object()
-    #     return super(CreateVisitView, self).post(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        self.object = form.save()
-        return self.render_to_response(self.get_context_data(form=form))
-
-    # def get_success_url(self):
-    #     print("KWARGS: ", self.kwargs)
-    #     return reverse('single_client', kwargs={'pk': self.kwargs['pk'], 'name': self.kwargs['name']})
-
-
-class SingleClientDetailView(View):
-    def get(self, request, *args, **kwargs):
-        view = SingleClientDisplay.as_view()
-        return view(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        view = CreateVisitView.as_view()
-        return view(request, *args, **kwargs)
 
 
 class AllClientsView(ListView):
     model = Client
+
+    def get_context_data(self, **kwargs):
+        context = super(AllClientsView, self).get_context_data(**kwargs)
+        closest_visits = (
+            Visit.objects
+            .values('client_id')
+            .annotate(closest_visit=Min('visit_date'))
+        )
+        closest_visit_dict = {visit['client_id']: visit['closest_visit'] for visit in closest_visits}
+        context['closest_visits'] = closest_visit_dict
+
+        # Order the clients based on closest visit date, with clients without a closest visit date appearing at the end
+        context['object_list'] = self.model.objects.annotate(
+            has_closest_visit=Min('visit_client__visit_date')
+        ).order_by(F('has_closest_visit').asc(nulls_last=True))
+        return context
+
+
+class ClientVisitsEditView(SingleObjectMixin, FormView):
+    model = Client
+    template_name = 'clients_data/client_visits_edit.html'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object(queryset=Client.objects.all())
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object(queryset=Client.objects.all())
+        return super().post(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        return VisitFormSet(**self.get_form_kwargs(), instance=self.object)
+
+    def form_valid(self, form):
+        form.save()
+
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
+
+
+
+
+
+
+
+# class CreateVisitsView(CreateView):
+#     model = Visit
+#     form_class = VisitForm
+#     template_name = "clients_data/create_visit.html"
+#     success_url = '/clients-data/clients-list'
+#
+#     def get_success_url(self):
+#         self.success_url = '/clients-data/clients-list'
+#         return self.success_url
+#
+#     def get(self, request, *args, **kwargs):
+#         current_date = datetime.now().date()
+#         current_time = datetime.now().time()
+#         formset = formset_factory(VisitForm, extra=0)
+#         initial_data = [{'client': '1', 'visit_date': current_date, 'visit_time': current_time}]
+#         formset = formset(initial=initial_data, prefix='visit')
+#         visit_form = self.get_form(form_class=VisitForm)
+#         return render(request, self.template_name, {'formset': formset, 'form': visit_form})
+#
+#     def post(self, request, *args, **kwargs):
+#         visit_form = self.get_form()  # Use the get_form() method to initialize the form instance
+#         formset = formset_factory(VisitForm, extra=0)(request.POST, prefix='visit')  # Provide a prefix for the formset
+#
+#         if visit_form.is_valid() and formset.is_valid():
+#             visit_instance = visit_form.save()
+#
+#             for form in formset:
+#                 form_instance = form.save(commit=False)
+#                 form_instance.visit = visit_instance
+#                 form_instance.save()
+#
+#             return HttpResponseRedirect(self.get_success_url())
+#
+#         return render(request, self.template_name, {'formset': formset, 'form': visit_form})
+#
+#
+# class SingleClientView2(DetailView, FormMixin):
+#     model = Client
+#     form_class = VisitForm
+#     template_name = 'clients_data/client_detail.html'
+#
+#     def get_success_url(self):
+#         return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(SingleClientView2, self).get_context_data(**kwargs)
+#         context['form'] = self.get_form()
+#         return context
+#
+#     # def get_context_data(self, **kwargs):
+#     #     context = super(SingleClientView, self).get_context_data(**kwargs)
+#     #     # client = self.get_object()
+#     #     # visits = [
+#     #     #     {'visit_date': client.visit_date, 'visit_time': client.visit_time}
+#     #     # ]
+#     #     # VisitFormSet = formset_factory(VisitForm, extra=1)
+#     #     formset = VisitFormSet(prefix='visit-formset')
+#     #     context['formset'] = formset
+#     #     return context
+#
+#     def post(self, request, *args, **kwargs):
+#         self.object = self.get_object()
+#         form = self.get_form()
+#         if form.is_valid():
+#             return self.form_valid(form)
+#         else:
+#             return self.form_invalid(form)
+#
+#     # def post(self, request, *args, **kwargs):
+#     #     self.object = self.get_object()
+#     #     # VisitFormSet = formset_factory(VisitForm, extra=1)
+#     #     formset = VisitFormSet(request.POST, prefix='visit-formset')
+#     #
+#     #     if formset.is_valid():
+#     #         return self.form_valid(formset)
+#     #     else:
+#     #         return self.form_invalid(formset)
+#
+#     def form_valid(self, form):
+#         # Here, we would record the user's interest using the message
+#         # passed in form.cleaned_data['message']
+#         return super(SingleClientView2, self).form_valid(form)
+#
+#     # def form_valid(self, formset):
+#     #     client = self.get_object()
+#     #     cleaned_data = formset.cleaned_data[0]
+#     #     client.visit_date = cleaned_data.get('visit_date')
+#     #     client.visit_time = cleaned_data.get('visit_time')
+#     #     client.save()
+#     #     return redirect(self.get_success_url())
+#
+#     # def form_invalid(self, formset):
+#     #     return self.render_to_response(self.get_context_data(formset=formset))
+#
+#
+# class SingleClientDisplay(DetailView):
+#     model = Client
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(SingleClientDisplay, self).get_context_data(**kwargs)
+#         context['form'] = VisitForm()
+#         return context
+#
+#
+# class CreateVisitView(CreateView, SingleObjectMixin):
+#     template_name = 'clients_data/client_detail.html'
+#     form_class = VisitForm
+#     model = Visit
+#     # success_url = reverse('single_client', kwargs={'pk': self.kwargs['pk'], 'name': self.kwargs['name']})
+#
+#     # def post(self, request, *args, **kwargs):
+#     #     print("One")
+#     #     # if not request.user.is_authenticated:
+#     #     #     return HttpResponseForbidden()
+#     #     # self.object = self.get_object()
+#     #     return super(CreateVisitView, self).post(request, *args, **kwargs)
+#
+#     def form_valid(self, form):
+#         self.object = form.save()
+#         return self.render_to_response(self.get_context_data(form=form))
+#
+#     # def get_success_url(self):
+#     #     print("KWARGS: ", self.kwargs)
+#     #     return reverse('single_client', kwargs={'pk': self.kwargs['pk'], 'name': self.kwargs['name']})
+#
+#
+# class SingleClientDetailView(View):
+#     def get(self, request, *args, **kwargs):
+#         view = SingleClientDisplay.as_view()
+#         return view(request, *args, **kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         view = CreateVisitView.as_view()
+#         return view(request, *args, **kwargs)
+
+
 
 #
 # def client_list(request):

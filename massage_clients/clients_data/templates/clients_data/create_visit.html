@@ -2,64 +2,81 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block title %} {{ client.name|title}} {% endblock %}
+
 {% block form %}
 <h1 class="mb-4">Add Visits</h1>
-                        <form method="POST">
-                          {% csrf_token %}
-                              {{ formset.management_form }}
-                                {% for form in formset %}
-                                    {% if form.errors %}
-                                        {% for error in form.errors %}
-                                        <p>{{ error }}</p>
+<form method="POST" id="formset-form">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  <div id="formset-container">
+    {% for form in formset %}
+      {% for hidden_field in form.hidden_fields %}
+        {{ hidden_field.errors }}
+        {{ hidden_field }}
+      {% endfor %}
+      {{ form.non_form_errors }}
+      {% if form.errors %}
+        {% for error in form.errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      {% endif %}
+      {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      {% endif %}
+      <div class="form-row">
+        <div class="form-group col-md-4 mb-0">
+          {{ form.client|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-3 mb-0">
+          {{ form.visit_date|as_crispy_field }}
+        </div>
+        <div class="form-group col-md-3 mb-0">
+          {{ form.visit_time|as_crispy_field }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="col-12 col-sm-12">
+    <div class="col-12">
+      <button type="button" id="add-form-btn">Clone Form</button>
+      <button class="btn btn-primary w-100 py-3" type="submit">Add</button>
+    </div>
+  </div>
+</form>
 
-                                        {% endfor %}
-                                    {% endif %}
-                                    {% if form.non_field_errors %}
-                                        {% for error in form.non_field_errors %}
-                                        <p>{{ error }}</p>
-
-                                        {% endfor %}
-                                    {% endif %}
-
-                            <div class="form-row">
-                                <div class="form-group col-md-4 mb-0">
-                                    {{ form.client|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-3 mb-0">
-                                    {{ form.visit_date|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-3 mb-0">
-                                    {{ form.visit_time|as_crispy_field }}
-                                </div>
-                            </div>
-                            {% endfor %}
-                            <div class="col-12 col-sm-12">
-                                <div class="col-12">
-                                     <button type="button" id="add-form-btn">Add Form</button>
-                                    <button class="btn btn-primary w-100 py-3" type="submit">Add</button>
-                                </div>
-                            </div>
-                        </form>
-
-{% endblock %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const addFormBtn = document.getElementById('add-form-btn');
-    const formsetContainer = document.getElementById('formset-container');
-    const formsetCount = {{ formset.total_form_count }};
+  $(document).ready(function() {
+    // Get the formset container
+    var formsetContainer = $('#formset-container');
 
-    addFormBtn.addEventListener('click', function() {
-      const formIdx = formsetCount;
-      const formHtml = `
-        <div class="formset-form">
-          <fieldset class="form-group">
-            <legend>Form ${formIdx + 1}</legend>
-            {{ formset.empty_form.as_p }}
-          </fieldset>
-        </div>
-      `;
-      formsetContainer.insertAdjacentHTML('beforeend', formHtml);
-    });
+    // Get the form template
+    var formTemplate = formsetContainer.find('.form-row').first().clone();
+
+    // Function to add a new form
+    function addForm() {
+      // Replace the form's input names and IDs with the new form's count
+      var newForm = formTemplate.clone();
+
+      newForm.find('input').each(function() {
+        var input = $(this);
+        var name = input.attr('name').replace('__prefix__', formsetContainer.children().length);
+        var id = 'id_' + name;
+        input.attr('name', name);
+        input.attr('id', id);
+        input.val('');
+      });
+
+      // Append the new form to the formset container
+      formsetContainer.append(newForm);
+    }
+
+    // Handle click event on "Add Form" button
+    $('#add-form-btn').click(addForm);
   });
 </script>
+{% endblock %}

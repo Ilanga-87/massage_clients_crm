@@ -1,15 +1,33 @@
 {% extends 'clients_data/base.html' %}
 {% load static %}
+{% load custom_tags %}
+
+{% block title %} Все клиенты {% endblock %}
 
 {% block table %}
-<h1>Clients</h1>
-<ul>
+<h1>Все клиенты</h1>
+  <div class="container-fluid">
+    <div class="d-flex align-items-left py-5">
+      <div class="col-12 col-md-8 mx-auto">
 {% for client in object_list %}
-    <li>{{ client.name }} - {{ client.phone_number }} - {{ client.massage_type }} - {{ client.one_visit_price }} - {{ client.visit_days }} - {{ client.visit_time|time:"H:i" }}</li>
-{% empty %}
-    <li>No clients yet.</li>
-{% endfor %}
-</ul>
+           <hr>
+    <p class="h4 text-left"><a href="{{ client.get_absolute_url }}">{{ client.name }}, {{ client.age|default_if_none:" - " }}: {{ client.phone_number }}.
 
+            {% with closest_visit=closest_visits|get_value:client.id %}
+                {% if closest_visit %}
+                    {{ closest_visit }}
+                {% else %}
+                    Нет запланированных визитов
+                {% endif %}
+            {% endwith %}
+</a>
+    </p>
+{% empty %}
+    <p class="h4">Пока клиентов нет.</p>
+           <hr>
+{% endfor %}
+</div>
+    </div>
+  </div>
 
 {% endblock %}

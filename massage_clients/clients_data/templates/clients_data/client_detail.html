@@ -2,123 +2,48 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block title %} {{ object.name|title}} {% endblock %}
+
 {% block client_details %}
-    <div class="team-item text-left">
+    <div class="col-12 team-item text-left align-items-center">
         <div class="row g-0 bg-light rounded overflow-hidden">
             <div class="col-12 col-sm-5 h-100 d-flex flex-column p-4">
-                <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age }}</h3>
-                <h5 class="fw-normal text-primary mb-1">Main contact: <span class="text-secondary">{{ object.phone_number }}</span></h5>
-                <h5 class="fw-normal text-primary mb-1">Additional contact: <span class="text-secondary">{{ object.another_contact }}</span></h5>
+                <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age|default_if_none:"-" }}</h3>
+                <h5 class="fw-normal text-primary mb-1">Телефон: <span class="text-secondary">{{ object.phone_number }}</span></h5>
+                <h5 class="fw-normal text-primary mb-1">Дополнительный контакт: <span class="text-secondary">{{ object.another_contact }} {% if not object.another_contact %} ---------- {% endif %}</span></h5>
             </div>
+
             <div class="col-12 col-sm-7 h-100 d-flex flex-column">
-                <div class="p-4">
-                    <h5 class="text-secondary m-1">Тип массажа: <span class="small text-dark fw-normal m-0">{{ object.massage_type }}</span></h5>
-                    <h5 class="text-secondary m-1">Количество сеансов: <span class="small text-dark fw-normal m-0">{{ object.therapy_duration }}</span></h5>
-                    <h5 class="text-secondary m-1">Стоимость сеанса: <span class="small text-dark fw-normal m-0">{{ object.one_visit_price }}</span></h5>
-                    <h5 class="text-secondary m-1">Стоимость курса: <span class="small text-dark fw-normal m-0">{{ object.one_visit_price }}</span></h5>
-                    <h5 class="text-secondary m-1">День первого визита: <span class="small text-dark fw-normal m-0">{{ object.first_visit_date }}</span></h5>
-                    <h5 class="text-secondary m-1">Время первого визита: <span class="small text-dark fw-normal m-0">{{ object.first_visit_time|time:"H:i" }}</span></h5>
-                    <h5 class="text-secondary m-1">День визита: <span class="small text-dark fw-normal m-0">{{ object.visit_day }}</span></h5>
-                    <h5 class="text-secondary m-1">Время визита: <span class="small text-dark fw-normal m-0">{{ object.visit_time|time:"H:i" }}</span></h5>
-                    <h5 class="text-secondary m-1">Статус: <span class="small text-dark fw-normal m-0">{{ object.is_archived|yesno:"Неактивен, Активен" }} </span></h5>
+                <div class="d-flex mt-auto border-top p-5">
+                    <span><h5>Жалобы и заболевания: </h5>{{ object.illnesses }} {% if not object.illnesses %} ---------- {% endif %}</span>
                 </div>
             </div>
             <div class="col-12 col-sm-12 h-100 d-flex flex-column">
                 <div class="d-flex mt-auto border-top p-4">
-                    <span><h5>Жалобы и заболевания: </h5>{{ object.illnesses }}</span>
+                    <span><h5>Дополнительная информация: </h5>{{ object.more_info }} {% if not object.more_info %} ---------- {% endif %}</span>
                 </div>
             </div>
             <div class="col-12 col-sm-12 h-100 d-flex flex-column">
                 <div class="d-flex mt-auto border-top p-4">
-                    <span><h5>Дополнительная информация: </h5>{{ object.more_info }}</span>
+                    <span><h5>Визиты: </h5>
+                        {% for visit in object.visit_client.all %}
+                            <div>{{ visit.visit_date }}: {{ visit.visit_time }}</div>
+                            <div>{{ visit.massage_type }}: {{ visit.visit_price }}</div>
+                            <div>{{ visit.more_info }}</div>
+                        {% empty %}
+                            <p>Нет назначенных визитов</p>
+                        {% endfor %}
+
+                    </span>
                 </div>
+        <div class="col-12 align-items-center text-center"> <p>
+        <a href="{% url 'client_visits_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Добавить визиты</a>
+    </p></div>
             </div>
             </div>
         </div>
 
-
+       <div class="col-12 align-items-right text-right mt-5 p-5"> <p>
+        <a href="{% url 'clients_list' %}" role="button" class="btn btn-secondary w-50">Обратно в список клиентов</a>
+    </p></div>
 {% endblock %}
-
- <div class="bg-white col-12 text-center rounded p-1">
-{% block form %}
-     <h2>Add Visit</h2>
-
-     <form method="POST" action="">
-      {% csrf_token %}
-                     <div class="form-row">
-                <div class="form-group col-md-3 mb-0">
-                    {{ form.visit_date|as_crispy_field }}
-                </div>
-                <div class="form-group col-md-3 mb-0">
-                    {{ form.visit_time|as_crispy_field }}
-                </div>
-            </div>
-<!--      {{ formset.management_form }}-->
-<!--        {% for form in formset %}-->
-         {% if form.errors %}
-         {% for error in form.errors %}
-         <p>{{ error }}</p>
-         {% endfor %}
-         {% endif %}
-            <div class="form-row">
-                {{ form.client.as_hidden }}
-                <div class="form-group col-md-3 mb-0">
-                    {{ form.visit_date|as_crispy_field }}
-                </div>
-                <div class="form-group col-md-3 mb-0">
-                    {{ form.visit_time|as_crispy_field }}
-                </div>
-            </div>
-<!--        {% endfor %}-->
-            <div class="col-6 col-sm-6">
-
-            <div class="col-12">
-<!--                <button type="button" onclick="cloneForm()">Clone Form</button>-->
-                <button class="btn btn-primary w-100 py-3" type="submit">Save</button>
-            </div>
-        </div>
-      </form>
-{% endblock %}
- </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function() {
-  var formCount = $('.formset').length;
-
-  $('#add-formset').click(function() {
-    var newForm = $('.formset:first').clone();
-    newForm.find('input[name^="form-"]').not('.visit-date, .visit-time').val('');
-
-    var dateField = newForm.find('.visit-date:first');
-    var timeField = newForm.find('.visit-time:first');
-
-    var dateValue = dateField.val();
-    var timeValue = timeField.val();
-
-    dateField.attr('name', 'form-' + formCount + '-visit_date');
-    timeField.attr('name', 'form-' + formCount + '-visit_time');
-
-    dateField.val(dateValue);
-    timeField.val(timeValue);
-
-    newForm.insertAfter('.formset:last');
-
-    formCount++;
-  });
-});
-</script>
-<script>
-  function cloneForm() {
-    var formCount = parseInt(document.getElementById('id_form-TOTAL_FORMS').value);
-    var template = document.getElementById('empty_form').innerHTML;
-    var newForm = template.replace(/__prefix__/g, formCount);
-    document.getElementById('formset-container').insertAdjacentHTML('beforeend', newForm);
-    document.getElementById('id_form-TOTAL_FORMS').value = formCount + 1;
-  }
-</script>
-
-<!-- Add this hidden empty form template -->
-<div id="empty_form" style="display: none;">
-  {{ formset.empty_form.as_table }}
-</div>
