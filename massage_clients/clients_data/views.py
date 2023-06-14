@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.http import HttpResponseRedirect
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
@@ -66,6 +68,51 @@ class SingleClientUpdateView(UpdateView):
     model = Client
     form_class = ClientForm
     template_name_suffix = "_update_form"
+
+
+class ScheduleView(TemplateView):
+    template_name = 'clients_data/schedule_table.html'
+
+
+class TimetableView(TemplateView):
+    template_name = 'clients_data/schedule_table_2.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get today's date and calculate the next 9 dates
+        today = datetime.today().date()
+        dates = [today + timedelta(days=i) for i in range(10)]
+
+        # Define the time range from 13:00 to 21:00
+        start_time = datetime.strptime("13:00", "%H:%M").time()
+        end_time = datetime.strptime("21:00", "%H:%M").time()
+        time_range = []
+        current_time = start_time
+        while current_time <= end_time:
+            time_range.append(current_time)
+            current_time = (datetime.combine(datetime.today(), current_time) + timedelta(minutes=60)).time()
+
+        timetable_matrix = []
+
+        for i in range(len(time_range)):
+            row = [None] * (len(dates) + 1)
+            row[0] = time_range[i]
+            for j in range(len(dates)):
+                if time_range[i] != time_range[-1]:
+                    visit = Visit.objects.filter(visit_date=dates[j], visit_time__gte=time_range[i],
+                                                 visit_time__lt=time_range[i+1])
+                else:
+                    visit = Visit.objects.filter(visit_date=dates[j], visit_time__gte=time_range[i])
+                if len(visit) > 0:
+                    for item in visit:
+                        row[j+1] = item.client.name
+            timetable_matrix.append(row)
+
+        context['dates'] = dates
+        context['timetable'] = timetable_matrix
+
+        return context
 
 
 

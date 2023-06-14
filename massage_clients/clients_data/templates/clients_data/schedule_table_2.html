@@ -1,0 +1,35 @@
+{% extends 'clients_data/base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %} Расписание {% endblock %}
+
+{% block table %}
+
+<table class="days">
+    <thead>
+        <tr>
+            <th></th> <!-- Empty header for spacing -->
+            {% for date in dates %}
+                <th>{{ date }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+<tbody>
+    {% for row in timetable %}
+        <tr>
+            {% for item in row %}
+            <td>{{ item|default_if_none:" " }}</td>
+            {% endfor %}
+    {% endfor %}
+</tbody>
+
+
+
+
+
+
+
+</table>
+{% endblock %}

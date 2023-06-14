@@ -7,5 +7,6 @@ urlpatterns = [
     path('clients/<int:pk>/<str:name>/', views.SingleClientDisplayView.as_view(), name='single_client'),
     path('clients/<int:pk>/<str:name>/visits/edit', views.ClientVisitsEditView.as_view(), name='client_visits_edit'),
     path('clients/<int:pk>/<str:name>/client/edit', views.SingleClientUpdateView.as_view(), name='client_update'),
+    path('schedule/', views.TimetableView.as_view(), name='schedule'),
     # path('schedule/', views.schedule, name='schedule'),  # URL for the fourth page with the schedule
 ]
