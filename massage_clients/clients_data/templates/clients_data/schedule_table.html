@@ -1,92 +1,55 @@
 {% extends 'clients_data/base.html' %}
 {% load static %}
+{% load custom_tags %}
 
-{% block title %} График {% endblock %}
+{% block title %} Расписание {% endblock %}
 
 {% block table %}
-<!-- / College Timetable -->
 <div class='col-12 tab'>
-  <table class='col-12' border='0' cellpadding='0' cellspacing='0'>
-    <tr class='days'>
-      <th></th>
-      <th>Monday</th>
-      <th>Tuesday</th>
-      <th>Wednesday</th>
-      <th>Thursday</th>
-      <th>Friday</th>
-    </tr>
-    <tr>
-      <td class='time'>9.00</td>
-      <td class='cs335 candy' data-tooltip='Software Engineering &amp; Software Process'>CS335 [JH1]</td>
-      <td class='cs426 purple' data-tooltip='Computer Graphics'>CS426 [CS1]</td>
-      <td></td>
-      <td></td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>10.00</td>
-      <td></td>
-      <td class='cs335 candy lab' data-tooltip='Software Engineering &amp; Software Process'>CS335 [Lab]</td>
-      <td class='md352 green' data-tooltip='Multimedia Production &amp; Management'>MD352 [Kairos]</td>
-      <td></td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>11.00</td>
-      <td></td>
-      <td class='cs335 candy lab' data-tooltip='Software Engineering &amp; Software Process'>CS335 [Lab]</td>
-      <td class='md352 green' data-tooltip='Multimedia Production &amp; Management'>MD352 [Kairos]</td>
-      <td class='cs240 orange' data-tooltip='Operating Systems'>CS240 [CH]</td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>12.00</td>
-      <td></td>
-      <td class='md303 navy' data-tooltip='Media &amp; Globalisation'>MD303 [CS2]</td>
-      <td class='md313 red' data-tooltip='Special Topic: Multiculturalism &amp; Nationalism'>MD313 [Iontas]</td>
-      <td></td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>13.00</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>14.00</td>
-      <td></td>
-      <td></td>
-      <td class='cs426 purple' data-tooltip='Computer Graphics'>CS426 [CS2]</td>
-      <td class='cs240 orange' data-tooltip='Operating Systems'>CS240 [TH1]</td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>15.00</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td class='cs240 orange lab' data-tooltip='Operating Systems'>CS240 [Lab]</td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>16.00</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td class='cs240 orange lab' data-tooltip='Operating Systems'>CS240 [Lab]</td>
-      <td>-</td>
-    </tr>
-    <tr>
-      <td class='time'>17.00</td>
-      <td class='cs335 candy' data-tooltip='Software Engineering &amp; Software Process'>CS335 [TH1]</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>-</td>
-    </tr>
-  </table>
+    <table class='col-12' border='0' cellpadding='0' cellspacing='0'>
+        <thead class='days'>
+            <tr>
+                <th class="p-1"></th> <!-- Empty header for spacing -->
+                {% for date in dates %}
+                    <th class="p-1">{{ date|date:"j E" }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>{% for row in timetable %}
+            <td class="p-1 primary-cell">{{ row.0 }}</td>
+                <td class="p-1 text-primary {% if row.1.client %} pale {% endif %}"><a href="{{ row.1.client.get_absolute_url }}">{{ row.1.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.2.client %} pale {% endif %}"><a href="{{ row.2.client.get_absolute_url }}">{{ row.2.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.3.client %} pale {% endif %}"><a href="{{ row.3.client.get_absolute_url }}">{{ row.3.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.4.client %} pale {% endif %}"><a href="{{ row.4.client.get_absolute_url }}">{{ row.4.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.5.client %} pale {% endif %}"><a href="{{ row.5.client.get_absolute_url }}">{{ row.5.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.6.client %} pale {% endif %}"><a href="{{ row.6.client.get_absolute_url }}">{{ row.6.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.7.client %} pale {% endif %}"><a href="{{ row.7.client.get_absolute_url }}">{{ row.7.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.8.client %} pale {% endif %}"><a href="{{ row.8.client.get_absolute_url }}">{{ row.8.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.9.client %} pale {% endif %}"><a href="{{ row.9.client.get_absolute_url }}">{{ row.9.client.name|default_if_none:" " }}</a></td>
+                <td class="p-1 text-primary {% if row.10.client %} pale {% endif %}"><a href="{{ row.10.client.get_absolute_url }}">{{ row.10.client.name|default_if_none:" " }}</a></td>
+            </tr>
+
+<!--                <tr>-->
+<!--                    {% for item in row %}-->
+<!--                    <td class="{% if item in time_range %} 'orange' {% endif %}">{{ item }}</td>-->
+<!--                    <td class="p-1-->
+<!--                    {% cycle 'primary-cell' 'white' 'white' 'white' 'white' 'white' 'white' 'white' 'white' 'white' 'white' %}-->
+<!--                    {% cycle 'p' 'text-primary' 'text-primary' 'text-primary' 'text-primary' 'text-primary' 'text-primary' 'text-primary' 'text-primary' 'text-primary' 'text-primary' %}-->
+<!--                    ">{{ item|default_if_none:" " }}</td>-->
+<!--                    {% endfor %}-->
+<!--                </tr>-->
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
+
+
+
+
+
+
+
+</table>
 {% endblock %}

@@ -31,7 +31,9 @@
                     <hr>
                         <div class="mt-2">{{ visit.visit_date }}: {{ visit.visit_time }}</div>
                         <div>{{ visit.massage_type }}: {{ visit.visit_price }}</div>
-                        <div>{{ visit.more_info }}</div>
+                    {% if visit.more_info %}
+                    <div><p class="fa fa fa-paperclip"></p>  {{ visit.more_info }}</div>
+                    {% endif %}
                     {% empty %}
                         <p>Нет назначенных визитов</p>
                     {% endfor %}
