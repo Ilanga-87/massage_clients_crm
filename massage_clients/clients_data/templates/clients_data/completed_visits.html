@@ -1,0 +1,19 @@
+{% extends 'clients_data/base.html' %}
+{% block title %} Архив визитов {% endblock %}
+
+{% block content %}
+  <h1>Завершенные визиты</h1>
+  <div class="container-fluid">
+    <div class="d-flex align-items-left py-5">
+      <div class="col-12 col-md-8 mx-auto">
+    {% for visit in completed_visits %}
+           <hr>
+        <p class="h4 text-left"><a href="{{ visit.client.get_absolute_url }}">{{ visit.client.name }}, {{visit.client.age|default_if_none:" - " }}: {{ visit.visit_date }} | {{ visit.visit_time }} ({{ visit.massage_type }}, {{ visit.visit_price }} cом)</a></p>
+    {% empty %}
+    <p class="h4">Пока нет завершенных визитов.</p>
+           <hr>
+    {% endfor %}
+</div>
+    </div>
+  </div>
+{% endblock %}

@@ -57,7 +57,10 @@
       {{ visit_form.more_info|as_crispy_field }}
       </div>
         <div class="form-group col-md-6 mb-0 mt-4">
-      {{ visit_form.DELETE|as_crispy_field }}
+          <p>{{ visit_form.done_and_paid|as_crispy_field }}</p>
+          <div class="delete-warning">{{ visit_form.DELETE|as_crispy_field }}</div>
+
+
         </div>
     </div>
 

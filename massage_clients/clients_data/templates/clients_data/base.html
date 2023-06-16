@@ -52,6 +52,7 @@
 
                     <div class="bg-white text-center rounded p-1">
                         {% block client_details %}{% endblock %}
+                        {% block content %}{% endblock %}
                         {% block form %}{% endblock %}
                         {% block table %}{% endblock %}
                     </div>
@@ -73,6 +74,9 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <a class="h4 d-inline-block text-primary text-uppercase border-bottom border-5 border-secondary mb-4" href="{% url 'schedule' %}">Расписание</a>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <a class="h4 d-inline-block text-primary text-uppercase border-bottom border-5 border-secondary mb-4" href="{% url 'completed_visits' %}">Архив визитов</a>
                 </div>
             </div>
         </div>

@@ -53,11 +53,27 @@ class ClientVisitsEditView(SingleObjectMixin, FormView):
         return super().post(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
-        return VisitFormSet(**self.get_form_kwargs(), instance=self.object)
+        formset = VisitFormSet(**self.get_form_kwargs(), instance=self.object)
+        formset.queryset = formset.queryset.exclude(done_and_paid=True)
+        return formset
 
     def form_valid(self, form):
-        form.save()
+        formset = form
 
+        if formset.is_valid():
+            total_price = 0
+            for visit_form in formset:
+                if not visit_form.cleaned_data.get('DELETE', False):
+                    visit_price = visit_form.cleaned_data.get('visit_price', 0)
+                    done_and_paid = visit_form.cleaned_data.get('done_and_paid', False)
+
+                    if done_and_paid:
+                        total_price += visit_price
+
+            self.object.balance += total_price
+            self.object.save()
+
+        form.save()
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
@@ -114,3 +130,12 @@ class TimetableView(TemplateView):
         context['timetable'] = timetable_matrix
 
         return context
+
+
+class CompletedVisitsListView(ListView):
+    model = Visit
+    template_name = 'clients_data/completed_visits.html'
+    context_object_name = 'completed_visits'
+
+    def get_queryset(self):
+        return self.model.objects.filter(done_and_paid=True)

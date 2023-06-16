@@ -8,4 +8,5 @@ urlpatterns = [
     path('clients/<int:pk>/<str:name>/visits/edit', views.ClientVisitsEditView.as_view(), name='client_visits_edit'),
     path('clients/<int:pk>/<str:name>/client/edit', views.SingleClientUpdateView.as_view(), name='client_update'),
     path('schedule/', views.TimetableView.as_view(), name='schedule'),
+    path('completed-visits/', views.CompletedVisitsListView.as_view(), name='completed_visits'),
 ]
