@@ -1,5 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
+from django.utils import formats
+
 from .models import Client, Visit
 
 
@@ -39,10 +41,16 @@ class VisitForm(forms.ModelForm):
 
         widgets = {
             'visit_date': forms.DateInput(
-                attrs={'type': 'date', 'placeholder': 'dd.MM.yyyy'}),
+                attrs={'type': 'date', }),
             'visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm'}),
             'more_info': forms.Textarea(attrs={'rows': 2, 'cols': 4})
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            visit_date = self.instance.visit_date
+            self.initial['visit_date'] = formats.date_format(visit_date, 'Y-m-d')
 
 
 VisitFormSet = inlineformset_factory(Client, Visit, form=VisitForm, extra=10)
