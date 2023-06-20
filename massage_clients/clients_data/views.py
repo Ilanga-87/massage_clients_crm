@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse
-from django.db.models import Min, F
+from django.db.models import Min, F, Q
 
 from .forms import ClientForm, VisitFormSet
 from .models import Client, Visit
@@ -22,21 +22,26 @@ class SingleClientDisplayView(DetailView):
 
 class AllClientsView(ListView):
     model = Client
+    template_name = 'clients_data/clients_list.html'  # Specify the template name explicitly
 
     def get_context_data(self, **kwargs):
-        context = super(AllClientsView, self).get_context_data(**kwargs)
-        closest_visits = (
-            Visit.objects
-            .values('client_id')
-            .annotate(closest_visit=Min('visit_date'))
-        )
-        closest_visit_dict = {visit['client_id']: visit['closest_visit'] for visit in closest_visits}
-        context['closest_visits'] = closest_visit_dict
+        context = super().get_context_data(**kwargs)
+        ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
 
-        # Order the clients based on closest visit date, with clients without a closest visit date appearing at the end
-        context['object_list'] = self.model.objects.annotate(
-            has_closest_visit=Min('visit_client__visit_date')
-        ).order_by(F('has_closest_visit').asc(nulls_last=True))
+        if ordering == 'name':
+            context['object_list'] = self.model.objects.order_by('name')
+        elif ordering == 'closest_visit':
+            closest_visits = (
+                Visit.objects
+                .values('client_id')
+                .annotate(closest_visit=Min('visit_date'))
+            )
+            closest_visit_dict = {visit['client_id']: visit['closest_visit'] for visit in closest_visits}
+            context['object_list'] = self.model.objects.annotate(
+                closest_visit_date=Min('visit_client__visit_date')
+            ).order_by(F('closest_visit_date').asc(nulls_last=True))
+            context['closest_visits'] = closest_visit_dict
+
         return context
 
 

@@ -1,0 +1,60 @@
+<!-- AllClientsView template -->
+{% extends 'clients_data/base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %} Все клиенты {% endblock %}
+
+{% block table %}
+  <h1>Все клиенты</h1>
+
+
+
+    <div class="d-flex align-items-left py-5">
+      <div class="col-12 col-md-8 mx-auto">
+
+          <div class="row">
+     <div class="col-12">
+                    <div class="form-group">
+        <form method="GET" action="{% url 'clients_list' %}">
+<div class="col-12 col-md-7" style="display:inline-block">
+            <select class="form-select form-select-sm" name="ordering">
+            <option value="name">По имени</option>
+            <option value="closest_visit">По ближайшему визиту</option>
+          </select>
+</div>
+<div class="col-12 col-md-4" style="display:inline-block">
+          <button type="submit" class="btn btn-primary">Сортировать</button>
+</div>
+        </form>
+                    </div></div></div>
+
+
+          <!-- All clients list approach START-->
+        {% for client in object_list %}
+        <hr>
+        <p class="h5 text-left">
+          <a href="{{ client.get_absolute_url }}">
+            {{ client.name }}, {{ client.age|default_if_none:" - " }}: {{ client.phone_number }}.
+            {% if closest_visits %}
+
+              {% with closest_visit=closest_visits|get_value:client.id %}
+                {% if closest_visit %}
+                  {{ closest_visit }}
+                {% else %}
+                  Нет запланированных визитов
+                {% endif %}
+              {% endwith %}
+
+            {% endif %}
+          </a>
+        </p>
+        {% empty %}
+        <p class="h4">Пока клиентов нет.</p>
+        <hr>
+        {% endfor %}
+           <!-- All clients list approach END -->
+
+    </div>
+  </div>
+{% endblock %}
