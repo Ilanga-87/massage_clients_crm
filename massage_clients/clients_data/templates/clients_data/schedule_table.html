@@ -13,7 +13,7 @@
             <tr class="thead-secondary text-white">
                 <th></th> <!-- Empty header for spacing -->
                 {% for date in dates %}
-                <th class="text-left text-white"><p class="h6 text-white">{{ date|date:"j E" }}</p></th>
+                <th class="text-left text-white {% if date.weekday in weekend %}weekend{% endif %}"><p class="h6 text-white">{{ date|date:"j E (D)" }}</p></th>
                 {% endfor %}
             </tr>
         </thead>
@@ -26,7 +26,7 @@
                 {% if forloop.first %}
                 <th class="text-left text-secondary h5">{{ item }}</th>
                 {% else %}
-                <td class="text-left text-secondary {% if item.client %} pale {% endif %}"><a href="{{ item.client.get_absolute_url }}">{{ item.client.name|default_if_none:" " }}</a></td>
+                <td class="text-left text-secondary {% if item.client %} pale {% endif %}" style="padding: 10px 5px 10px 10px !important"><a href="{{ item.client.get_absolute_url }}">{{ item.client.name|default_if_none:" " }}</a></td>
                 {% endif %}
                 {% endfor %}
             </tr>

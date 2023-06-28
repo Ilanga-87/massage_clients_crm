@@ -167,6 +167,7 @@ class TimetableView(TemplateView):
         context['dates'] = dates
         context['time_range'] = time_range
         context['timetable'] = timetable_matrix
+        context['weekend'] = [5, 6]
 
         return context
 
