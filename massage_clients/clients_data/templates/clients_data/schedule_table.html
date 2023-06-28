@@ -2,16 +2,18 @@
 {% load static %}
 {% load custom_tags %}
 
-{% block title %} Расписание {% endblock %}
+{% block title %} Расписание визитов {% endblock %}
 
 {% block table %}
+<h1 class="pb-3">Расписание визитов</h1>
 <div class='col-12 tab'>
-    <table class='col-12' border='0' cellpadding='0' cellspacing='0'>
-        <thead class='days'>
-            <tr>
-                <th class="p-1"></th> <!-- Empty header for spacing -->
+<div class='table-responsive'>
+    <table class='col-12 table table-sm table-striped table-hover' border='0' cellpadding='0' cellspacing='0'>
+        <thead>
+            <tr class="thead-secondary text-white">
+                <th></th> <!-- Empty header for spacing -->
                 {% for date in dates %}
-                    <th class="p-1">{{ date|date:"j E" }}</th>
+                <th class="text-left text-white"><p class="h6 text-white">{{ date|date:"j E" }}</p></th>
                 {% endfor %}
             </tr>
         </thead>
@@ -22,9 +24,9 @@
 
                 {% for item in row %}
                 {% if forloop.first %}
-                <td class="p-1 primary-cell">{{ item }}</td>
+                <th class="text-left text-secondary h5">{{ item }}</th>
                 {% else %}
-                <td class="p-1 text-primary {% if item.client %} pale {% endif %}"><a href="{{ item.client.get_absolute_url }}">{{ item.client.name|default_if_none:" " }}</a></td>
+                <td class="text-left text-secondary {% if item.client %} pale {% endif %}"><a href="{{ item.client.get_absolute_url }}">{{ item.client.name|default_if_none:" " }}</a></td>
                 {% endif %}
                 {% endfor %}
             </tr>
@@ -46,6 +48,7 @@
 <!--            {% endfor %}-->
         </tbody>
     </table>
+</div>
 </div>
 
 {% endblock %}

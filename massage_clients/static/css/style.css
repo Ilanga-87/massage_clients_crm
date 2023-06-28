@@ -292,7 +292,7 @@ $orange: #f39c12;
   background: #ffffff;
 }
 .pale {
-  background: #f7f1e8;
+  background: rgba(53,79,142,0.1) !important;
 }
 .primary-cell {
   background: #1D2A4D;
@@ -431,11 +431,20 @@ table {
   @include opacity(1);
 }
 
-table, th, td {
-  border: 0.5px solid #848E9F;
-}
-
 .delete-warning {
   color: #13C5DD;
 
+}
+
+.thead-secondary {
+  background-color: #1d2a4d !important;
+  color: #ffffff !important;
+}
+
+.table tbody td th {
+  padding: 10px 20px 10px 20px !important;
+}
+
+.table thead th {
+  padding: 10px 20px 10px 20px !important;
 }
