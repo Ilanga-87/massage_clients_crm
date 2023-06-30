@@ -1,29 +1,54 @@
 from datetime import datetime, timedelta
 
+from django.contrib.auth.views import LoginView
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, CharField
 from django.db.models.functions import Concat, Cast
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .forms import ClientForm, VisitFormSet
 from .models import Client, Visit
 
 
-class CreateClientView(CreateView):
+class RedirectPermissionRequiredMixin(PermissionRequiredMixin):
+    login_url = reverse_lazy('home')
+
+    def handle_no_permission(self):
+        return redirect(self.get_login_url())
+
+
+class CreateClientView(RedirectPermissionRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
     template_name = "clients_data/create_client.html"
 
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
 
-class SingleClientDisplayView(DetailView):
+
+class SingleClientDisplayView(RedirectPermissionRequiredMixin, DetailView):
     model = Client
 
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
 
-class AllClientsView(ListView):
+
+class AllClientsView(RedirectPermissionRequiredMixin, ListView):
     model = Client
-    template_name = 'clients_data/clients_list.html'  # Specify the template name explicitly
+    template_name = 'clients_data/clients_list.html'
+
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -79,9 +104,14 @@ class AllClientsView(ListView):
         return context
 
 
-class ClientVisitsEditView(SingleObjectMixin, FormView):
+class ClientVisitsEditView(RedirectPermissionRequiredMixin, SingleObjectMixin, FormView):
     model = Client
     template_name = 'clients_data/client_visits_edit.html'
+
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object(queryset=Client.objects.all())
@@ -119,18 +149,28 @@ class ClientVisitsEditView(SingleObjectMixin, FormView):
         return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
 
 
-class SingleClientUpdateView(UpdateView):
+class SingleClientUpdateView(RedirectPermissionRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name_suffix = "_update_form"
 
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
 
-class ScheduleView(TemplateView):
+
+class ScheduleView(RedirectPermissionRequiredMixin, TemplateView):
     template_name = 'clients_data/schedule_table_ex.html'
 
 
-class TimetableView(TemplateView):
+class TimetableView(RedirectPermissionRequiredMixin, TemplateView):
     template_name = 'clients_data/schedule_table.html'
+
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -172,10 +212,15 @@ class TimetableView(TemplateView):
         return context
 
 
-class CompletedVisitsListView(ListView):
+class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
     model = Visit
     template_name = 'clients_data/completed_visits.html'
     context_object_name = 'completed_visits'
+
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -208,3 +253,9 @@ class CompletedVisitsListView(ListView):
             context['object_list'] = self.model.objects.filter(done_and_paid=True).order_by('client__name')
 
         return context
+
+
+# Users Views
+
+class UserLoginView(LoginView):
+    pass

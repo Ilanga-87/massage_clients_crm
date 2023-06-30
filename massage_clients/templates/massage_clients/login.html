@@ -1,0 +1,52 @@
+{% extends "massage_clients/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block form %}
+<h1 class="mb-4">Войти в аккаунт</h1>
+
+<div class="row">
+<div class="mx-auto col-12 col-md-4">
+
+
+{% if form.errors %}
+<p>Имя пользователя и пароль не совпадают. Попробуйте ещё раз.</p>
+{% endif %}
+
+{% if next %}
+    {% if user.is_authenticated %}
+    <p>У вашей учетной записи нет доступа к этой странице.
+        Чтобы продолжить, пожалуйста, войдите в систему с учетной записью, у которой есть доступ.</p>
+    {% else %}
+    <p>Пожалуйста, войдите в систему, чтобы увидеть эту страницу.</p>
+    {% endif %}
+{% endif %}
+
+<form method="post" action="{% url 'login' %}">
+{% csrf_token %}
+        <div class="form-row">
+                        <div class="form-group col-md-12 mb-0">
+    {{ form.username|as_crispy_field }}
+                        </div>
+        </div>
+             <div class="form-row">
+                        <div class="form-group col-md-12 mb-0">
+    {{ form.password|as_crispy_field }}
+                        </div>
+             </div>
+
+<div class="col-12 text-center d-grid gap-2 col-md-6 mx-auto">
+<input class="btn btn-primary py-3 my-3" type="submit" value="Войти">
+</div>
+<input type="hidden" name="next" value="{{ next }}">
+
+
+{# Assumes you set up the password_reset view in your URLconf #}
+<p><a href="{% url 'login' %}">Забыли пароль?</a></p>
+</form>
+
+
+</div>
+    </div>
+
+{% endblock %}

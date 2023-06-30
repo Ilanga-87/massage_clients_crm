@@ -1,0 +1,13 @@
+{% extends 'massage_clients/base.html' %}
+{% load static %}
+
+{% block content %}
+Hello! This is the page where you can start.
+If you want to log in, press button
+        <div class="col-12 text-center d-grid gap-2 col-md-6 mx-auto">
+            <a href="{% url 'login' %}" role="button"  class="btn btn-primary py-3">Войти</a>
+        </div>
+If you need any help, visit HELP PAGE
+Don't forget to read our RULES'
+
+{% endblock %}
