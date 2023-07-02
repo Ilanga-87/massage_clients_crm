@@ -26,7 +26,13 @@
                 {% if forloop.first %}
                 <th class="text-left text-secondary h5">{{ item }}</th>
                 {% else %}
-                <td class="text-left text-secondary {% if item.client %} pale {% endif %}" style="padding: 10px 5px 10px 10px !important"><a href="{{ item.client.get_absolute_url }}">{{ item.client.name|default_if_none:" " }}</a></td>
+                <td class="text-left text-secondary {% if item.client %} pale {% endif %}"
+                    {% if item.client %}data-tooltip="{{ item.massage_type }}, {{ item.visit_price }}" data-tooltip-persistent="foo" {% endif %}
+                    style="padding: 10px 5px 10px 10px !important">
+
+                        <a href="{{ item.client.get_absolute_url }}">{{ item.client.name|default_if_none:" " }}</a>
+
+                </td>
                 {% endif %}
                 {% endfor %}
             </tr>

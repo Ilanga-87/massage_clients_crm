@@ -372,68 +372,60 @@ table {
   width: 3em !important;
 }
 
-// Tooltip Stuff by Chris Bracco
-/* Add this attribute to the element that needs a tooltip */
-[data-tooltip] {
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
+@-webkit-keyframes fadeIn {
+  from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-/* Hide the tooltip content by default */
-[data-tooltip]:before,
-[data-tooltip]:after {
-  visibility: hidden;
-  @include opacity(0);
-  pointer-events: none;
-  @include transition(0.5s ease all);
-}
-
-/* Position tooltip above the element */
 [data-tooltip]:before {
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  margin-bottom: 5px;
-  margin-left: -80px;
-  padding: 7px;
-  width: 160px;
-  @include border-radius(6px);
-
-  background-color: black;
-  color: #fff;
+  /* needed - do not touch */
   content: attr(data-tooltip);
-  text-align: center;
-  font-size: 14px;
-  line-height: 1.2;
+  position: absolute;
+  display: none;
+
+  /* customizable */
+  transition: all 0.15s ease;
+  padding: 10px;
+  color: #333;
+  box-shadow: 2px 2px 1px silver;
+}
+
+[data-tooltip]:hover:before {
+  /* needed - do not touch */
+  display: inline-block;
+  animation: fadeIn 0.3s;
+
+  /* customizable */
+  background: #1d2a4d;
+  color: white;
+  font-weight: initial;
+  font-size: initial;
+  margin-top: -50px;
+  margin-left: -10px;
+}
+
+[data-tooltip]:not([data-tooltip-persistent]):before {
+  pointer-events: none;
 }
 
 /* Triangle hack to make tooltip look like a speech bubble */
-[data-tooltip]:after {
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  margin-left: -5px;
-  width: 0;
-  border-top: 5px solid black;
-  border-right: 5px solid transparent;
-  border-left: 5px solid transparent;
-  content: " ";
-  font-size: 0;
-  line-height: 0;
-}
-
-/* Show tooltip content on hover */
-[data-tooltip]:hover:before,
 [data-tooltip]:hover:after {
-  visibility: visible;
-  bottom: 90%;
-  @include opacity(1);
+  content: "";
+  position: relative;
+  top: 100%;
+  left: -40%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #1d2a4d transparent transparent transparent;
 }
 
 .delete-warning {
   color: #13C5DD;
-
 }
 
 .thead-secondary {
@@ -451,3 +443,53 @@ table {
 
 .weekend {
   background: #354F8E !important}
+
+
+/* Tooltip from https://www.w3schools.com/css/css_tooltip.asp */
+
+.tooltip {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -60px;
+
+  /* Fade in tooltip - takes 1 second to go from 0% to 100% opac: */
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.visible {
+  height: 3em;
+  width: 10em;
+  background: yellow;
+}

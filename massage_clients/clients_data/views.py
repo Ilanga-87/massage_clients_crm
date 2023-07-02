@@ -12,6 +12,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .forms import ClientForm, VisitFormSet
 from .models import Client, Visit
+from . import service_data
 
 
 class RedirectPermissionRequiredMixin(PermissionRequiredMixin):
@@ -163,6 +164,11 @@ class SingleClientUpdateView(RedirectPermissionRequiredMixin, UpdateView):
 class ScheduleView(RedirectPermissionRequiredMixin, TemplateView):
     template_name = 'clients_data/schedule_table_ex.html'
 
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
+
 
 class TimetableView(RedirectPermissionRequiredMixin, TemplateView):
     template_name = 'clients_data/schedule_table.html'
@@ -237,20 +243,196 @@ class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 Q(visit_time__icontains=search_query) |
                 Q(visit_price__icontains=search_query)
             ).distinct()
+
         return completed_visits
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
+        search_query = self.request.GET.get('search')
 
-        if ordering == 'visit_date':
-            context['object_list'] = self.model.objects.filter(done_and_paid=True).order_by('visit_date')
-        elif ordering == 'massage_type':
-            context['object_list'] = self.model.objects.filter(done_and_paid=True).order_by('massage_type')
-        elif ordering == 'visit_price':
-            context['object_list'] = self.model.objects.filter(done_and_paid=True).order_by('visit_price')
-        elif ordering == 'name':
-            context['object_list'] = self.model.objects.filter(done_and_paid=True).order_by('client__name')
+        if search_query:
+            completed_visits = self.model.objects.filter(done_and_paid=True).filter(
+                Q(client__name__icontains=search_query) |
+                Q(massage_type__icontains=search_query) |
+                Q(visit_date__icontains=search_query) |
+                Q(client__age__icontains=search_query) |
+                Q(visit_time__icontains=search_query) |
+                Q(visit_price__icontains=search_query)
+            ).distinct()
+
+            if ordering == 'visit_date':
+                completed_visits = completed_visits.order_by('visit_date')
+                visits_by_month = {}
+
+                for visit in completed_visits:
+                    month = service_data.months_dict[visit.visit_date.strftime('%B')]
+                    if month in visits_by_month:
+                        visits_by_month[month].append(visit)
+                    else:
+                        visits_by_month[month] = [visit]
+
+                context['visits_by_month'] = visits_by_month
+            elif ordering == 'massage_type':
+                completed_visits = completed_visits.order_by('massage_type')
+            elif ordering == 'visit_price':
+                completed_visits = completed_visits.order_by('visit_price')
+            elif ordering == 'name':
+                completed_visits = completed_visits.order_by('client__name')
+                visits_by_letter = {}
+                for visit in completed_visits:
+                    first_letter = visit.client.name[0].upper()
+                    if first_letter.isalpha():
+                        if first_letter in visits_by_letter:
+                            visits_by_letter[first_letter].append(visit)
+                        else:
+                            visits_by_letter[first_letter] = [visit]
+
+                context['visits_by_letter'] = visits_by_letter
+
+            context['object_list'] = completed_visits
+        else:
+            completed_visits = self.model.objects.filter(done_and_paid=True)
+            if ordering == 'visit_date':
+                completed_visits = completed_visits.order_by('visit_date')
+                visits_by_month = {}
+
+                for visit in completed_visits:
+                    month = service_data.months_dict[visit.visit_date.strftime('%B')]
+                    if month in visits_by_month:
+                        visits_by_month[month].append(visit)
+                    else:
+                        visits_by_month[month] = [visit]
+
+                context['visits_by_month'] = visits_by_month
+
+            elif ordering == 'massage_type':
+                completed_visits = completed_visits.order_by('massage_type')
+            elif ordering == 'visit_price':
+                completed_visits = completed_visits.order_by('visit_price')
+            elif ordering == 'name':
+                completed_visits = completed_visits.order_by('client__name')
+                visits_by_letter = {}
+                for visit in completed_visits:
+                    first_letter = visit.client.name[0].upper()
+                    if first_letter.isalpha():
+                        if first_letter in visits_by_letter:
+                            visits_by_letter[first_letter].append(visit)
+                        else:
+                            visits_by_letter[first_letter] = [visit]
+
+                context['visits_by_letter'] = visits_by_letter
+
+            context['object_list'] = completed_visits
+
+        return context
+
+
+class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
+    model = Visit
+    template_name = 'clients_data/actual_visits.html'
+    context_object_name = 'actual_visits'
+
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        actual_visits = self.model.objects.filter(done_and_paid=False)
+
+        search_query = self.request.GET.get('search')
+
+        if search_query:
+            actual_visits = actual_visits.filter(
+                Q(client__name__icontains=search_query) |
+                Q(massage_type__icontains=search_query) |
+                Q(visit_date__icontains=search_query) |
+                Q(client__age__icontains=search_query) |
+                Q(visit_time__icontains=search_query) |
+                Q(visit_price__icontains=search_query)
+            ).distinct()
+
+        return actual_visits
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
+        search_query = self.request.GET.get('search')
+
+        if search_query:
+            actual_visits = self.model.objects.filter(done_and_paid=False).filter(
+                Q(client__name__icontains=search_query) |
+                Q(massage_type__icontains=search_query) |
+                Q(visit_date__icontains=search_query) |
+                Q(client__age__icontains=search_query) |
+                Q(visit_time__icontains=search_query) |
+                Q(visit_price__icontains=search_query)
+            ).distinct()
+
+            if ordering == 'visit_date':
+                actual_visits = actual_visits.order_by('visit_date')
+                visits_by_month = {}
+
+                for visit in actual_visits:
+                    month = service_data.months_dict[visit.visit_date.strftime('%B')]
+                    if month in visits_by_month:
+                        visits_by_month[month].append(visit)
+                    else:
+                        visits_by_month[month] = [visit]
+
+                context['visits_by_month'] = visits_by_month
+            elif ordering == 'massage_type':
+                actual_visits = actual_visits.order_by('massage_type')
+            elif ordering == 'visit_price':
+                actual_visits = actual_visits.order_by('visit_price')
+            elif ordering == 'name':
+                actual_visits = actual_visits.order_by('client__name')
+                visits_by_letter = {}
+                for visit in actual_visits:
+                    first_letter = visit.client.name[0].upper()
+                    if first_letter.isalpha():
+                        if first_letter in visits_by_letter:
+                            visits_by_letter[first_letter].append(visit)
+                        else:
+                            visits_by_letter[first_letter] = [visit]
+
+                context['visits_by_letter'] = visits_by_letter
+
+            context['object_list'] = actual_visits
+        else:
+            actual_visits = self.model.objects.filter(done_and_paid=False)
+            if ordering == 'visit_date':
+                actual_visits = actual_visits.order_by('visit_date')
+                visits_by_month = {}
+
+                for visit in actual_visits:
+                    month = service_data.months_dict[visit.visit_date.strftime('%B')]
+                    if month in visits_by_month:
+                        visits_by_month[month].append(visit)
+                    else:
+                        visits_by_month[month] = [visit]
+
+                context['visits_by_month'] = visits_by_month
+            elif ordering == 'massage_type':
+                actual_visits = actual_visits.order_by('massage_type')
+            elif ordering == 'visit_price':
+                actual_visits = actual_visits.order_by('visit_price')
+            elif ordering == 'name':
+                actual_visits = actual_visits.order_by('client__name')
+                visits_by_letter = {}
+                for visit in actual_visits:
+                    first_letter = visit.client.name[0].upper()
+                    if first_letter.isalpha():
+                        if first_letter in visits_by_letter:
+                            visits_by_letter[first_letter].append(visit)
+                        else:
+                            visits_by_letter[first_letter] = [visit]
+
+                context['visits_by_letter'] = visits_by_letter
+
+            context['object_list'] = actual_visits
 
         return context
 
