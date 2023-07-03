@@ -29,15 +29,16 @@ class ClientForm(forms.ModelForm):
 class VisitForm(forms.ModelForm):
     class Meta:
         model = Visit
-        fields = ('visit_date', 'visit_time', 'massage_type', 'visit_price', 'more_info', 'done_and_paid')
+        fields = ('visit_date', 'visit_time', 'massage_type', 'visit_price', 'prepayment', 'more_info', 'completed')
 
         labels = {
             'visit_date': 'Дата приёма',
             'visit_time': 'Время приёма',
             'massage_type': 'Тип массажа',
             'visit_price': 'Цена приёма',
+            'prepayment': 'Внесённая предоплата',
             'more_info': 'Детали',
-            'done_and_paid': 'Проведен и оплачен',
+            'completed': 'Проведен',
         }
 
         widgets = {

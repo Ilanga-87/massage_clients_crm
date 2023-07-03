@@ -29,9 +29,10 @@ class Visit(models.Model):
     visit_date = models.DateField()
     visit_time = models.TimeField()
     massage_type = models.CharField(max_length=100)
-    visit_price = models.PositiveIntegerField()
+    visit_price = models.PositiveIntegerField(default=0)
+    prepayment = models.PositiveIntegerField(null=True, blank=True, default=0)
     more_info = models.TextField(blank=True)
-    done_and_paid = models.BooleanField(default=False)
+    completed = models.BooleanField(default=False)
 
     def get_closest_to(self, target):
         closest_greater_qs = self.filter(visit_date__gte=target).order_by('visit_date')

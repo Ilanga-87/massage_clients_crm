@@ -41,6 +41,18 @@ class SingleClientDisplayView(RedirectPermissionRequiredMixin, DetailView):
                            'clients_data.change_client',
                            'clients_data.delete_client')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = Visit.objects.filter(completed=False).filter(client__pk=self.kwargs['pk'])
+        remaining_payments = 0
+
+        for visit in query:
+            difference = visit.visit_price - visit.prepayment
+            remaining_payments += difference
+        context['remaining_payments'] = remaining_payments
+
+        return context
+
 
 class AllClientsView(RedirectPermissionRequiredMixin, ListView):
     model = Client
@@ -124,23 +136,20 @@ class ClientVisitsEditView(RedirectPermissionRequiredMixin, SingleObjectMixin, F
 
     def get_form(self, form_class=None):
         formset = VisitFormSet(**self.get_form_kwargs(), instance=self.object)
-        formset.queryset = formset.queryset.exclude(done_and_paid=True)
+        formset.queryset = formset.queryset.exclude(completed=True)
         return formset
 
     def form_valid(self, form):
         formset = form
 
         if formset.is_valid():
-            total_price = 0
+            visit_balance = 0
             for visit_form in formset:
                 if not visit_form.cleaned_data.get('DELETE', False):
-                    visit_price = visit_form.cleaned_data.get('visit_price', 0)
-                    done_and_paid = visit_form.cleaned_data.get('done_and_paid', False)
+                    prepayment = visit_form.cleaned_data.get('prepayment', 0)
+                    visit_balance += prepayment
 
-                    if done_and_paid:
-                        total_price += visit_price
-
-            self.object.balance += total_price
+            self.object.balance += visit_balance
             self.object.save()
 
         form.save()
@@ -230,7 +239,7 @@ class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        completed_visits = self.model.objects.filter(done_and_paid=True)
+        completed_visits = self.model.objects.filter(completed=True)
 
         search_query = self.request.GET.get('search')
 
@@ -252,7 +261,7 @@ class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
         search_query = self.request.GET.get('search')
 
         if search_query:
-            completed_visits = self.model.objects.filter(done_and_paid=True).filter(
+            completed_visits = self.model.objects.filter(completed=True).filter(
                 Q(client__name__icontains=search_query) |
                 Q(massage_type__icontains=search_query) |
                 Q(visit_date__icontains=search_query) |
@@ -292,7 +301,7 @@ class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
 
             context['object_list'] = completed_visits
         else:
-            completed_visits = self.model.objects.filter(done_and_paid=True)
+            completed_visits = self.model.objects.filter(completed=True)
             if ordering == 'visit_date':
                 completed_visits = completed_visits.order_by('visit_date')
                 visits_by_month = {}
@@ -340,7 +349,7 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        actual_visits = self.model.objects.filter(done_and_paid=False)
+        actual_visits = self.model.objects.filter(completed=False)
 
         search_query = self.request.GET.get('search')
 
@@ -362,7 +371,7 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
         search_query = self.request.GET.get('search')
 
         if search_query:
-            actual_visits = self.model.objects.filter(done_and_paid=False).filter(
+            actual_visits = self.model.objects.filter(completed=False).filter(
                 Q(client__name__icontains=search_query) |
                 Q(massage_type__icontains=search_query) |
                 Q(visit_date__icontains=search_query) |
@@ -402,7 +411,7 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
 
             context['object_list'] = actual_visits
         else:
-            actual_visits = self.model.objects.filter(done_and_paid=False)
+            actual_visits = self.model.objects.filter(completed=False)
             if ordering == 'visit_date':
                 actual_visits = actual_visits.order_by('visit_date')
                 visits_by_month = {}
@@ -435,9 +444,3 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
             context['object_list'] = actual_visits
 
         return context
-
-
-# Users Views
-
-class UserLoginView(LoginView):
-    pass
