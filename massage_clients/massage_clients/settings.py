@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
 
     'clients_data',
+    'clients_data_per_visit',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'

@@ -1,0 +1,45 @@
+{% extends 'clients_data_per_visit/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} Новый клиент {% endblock %}
+
+{% block form %}
+<h1 class="mb-4">Добавить нового клиента</h1>
+    <form method="POST">
+      {% csrf_token %}
+        {% if form.errors %}
+            {% for error in form.errors %}
+             <p>{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+        <div class="form-row">
+            <div class="form-group col-md-3 mb-0">
+                {{ form.name|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-3 mb-0">
+                {{ form.phone_number|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-3 mb-0">
+                {{ form.another_contact|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-2 mb-0">
+                {{ form.sex|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-1 mb-0">
+                {{ form.age|as_crispy_field }}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6 mb-0 row-fluid">
+                {{ form.illnesses|as_crispy_field }}
+            </div>
+            <div class="form-group col-md-6 mb-0 row-fluid">
+                 {{ form.more_info|as_crispy_field }}
+            </div>
+        </div>
+        <div class="col-12 text-center d-grid gap-2 col-md-6 mx-auto">
+            <button class="btn btn-primary py-3" type="submit">Добавить</button>
+        </div>
+    </form>
+{% endblock %}

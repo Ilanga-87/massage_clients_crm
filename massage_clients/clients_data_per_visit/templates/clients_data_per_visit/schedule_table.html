@@ -1,0 +1,60 @@
+{% extends 'clients_data_per_visit/base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %} Расписание визитов {% endblock %}
+
+{% block table %}
+<h1 class="pb-3">Расписание визитов</h1>
+<div class='col-12 tab'>
+<div class='table-responsive'>
+    <table class='col-12 table table-sm table-striped table-hover' border='0' cellpadding='0' cellspacing='0'>
+        <thead>
+            <tr class="thead-secondary text-white">
+                <th></th> <!-- Empty header for spacing -->
+                {% for date in dates %}
+                <th class="text-left text-white {% if date.weekday in weekend %}weekend{% endif %}"><p class="h6 text-white">{{ date|date:"j E (D)" }}</p></th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for row in timetable %}
+            <tr>
+
+                {% for item in row %}
+                {% if forloop.first %}
+                <th class="text-left text-secondary h5">{{ item }}</th>
+                {% else %}
+                <td class="text-left text-secondary {% if item.client %} pale {% endif %}"
+                    {% if item.client %}data-tooltip="{{ item.massage_type }}, {{ item.visit_price }}" data-tooltip-persistent="foo" {% endif %}
+                    style="padding: 10px 5px 10px 10px !important">
+
+                        <a href="{{ item.client.get_absolute_url }}">{{ item.client.name|default_if_none:" " }}</a>
+
+                </td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+<!--            <tr>{% for row in timetable %}-->
+<!--            <td class="p-1 primary-cell">{{ row.0 }}</td>-->
+<!--                <td class="p-1 text-primary {% if row.1.client %} pale {% endif %}"><a href="{{ row.1.client.get_absolute_url }}">{{ row.1.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.2.client %} pale {% endif %}"><a href="{{ row.2.client.get_absolute_url }}">{{ row.2.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.3.client %} pale {% endif %}"><a href="{{ row.3.client.get_absolute_url }}">{{ row.3.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.4.client %} pale {% endif %}"><a href="{{ row.4.client.get_absolute_url }}">{{ row.4.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.5.client %} pale {% endif %}"><a href="{{ row.5.client.get_absolute_url }}">{{ row.5.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.6.client %} pale {% endif %}"><a href="{{ row.6.client.get_absolute_url }}">{{ row.6.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.7.client %} pale {% endif %}"><a href="{{ row.7.client.get_absolute_url }}">{{ row.7.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.8.client %} pale {% endif %}"><a href="{{ row.8.client.get_absolute_url }}">{{ row.8.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.9.client %} pale {% endif %}"><a href="{{ row.9.client.get_absolute_url }}">{{ row.9.client.name|default_if_none:" " }}</a></td>-->
+<!--                <td class="p-1 text-primary {% if row.10.client %} pale {% endif %}"><a href="{{ row.10.client.get_absolute_url }}">{{ row.10.client.name|default_if_none:" " }}</a></td>-->
+<!--            </tr>-->
+
+<!--            {% endfor %}-->
+        </tbody>
+    </table>
+</div>
+</div>
+
+{% endblock %}

@@ -21,9 +21,11 @@ from .views import StartView, Err404View
 
 urlpatterns = [
     path('', StartView.as_view(), name='home'),
-    path('404/',Err404View.as_view(), name='404'),
+    path('404/', Err404View.as_view(), name='404'),
     path('login/', auth_views.LoginView.as_view(template_name="massage_clients/login.html", next_page='/clients-data/'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page=''), name='logout'),
     path('admin/', admin.site.urls),
+    path('clients-data-per-visit/', include('clients_data_per_visit.urls')),
     path('clients-data/', include('clients_data.urls')),
+
 ]

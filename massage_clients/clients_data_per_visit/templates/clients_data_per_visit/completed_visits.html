@@ -1,0 +1,206 @@
+{% extends 'clients_data_per_visit/base.html' %}
+{% block title %} Архив визитов {% endblock %}
+
+{% block content %}
+  <h1>Завершенные визиты</h1>
+    <div class="d-flex align-items-left py-5">
+      <div class="col-12 mx-auto">
+          <div class="text-left">
+          <div class="form-group d-grid gap-2 d-md-block">
+                    <form method="GET" action="{% url 'completed_visits' %}">
+                        <div class="col-12 col-md-4 py-1" style="display:inline-block">
+                          <input type="text" name="search" class="form-control" placeholder="Поиск" value="{{ request.GET.search }}">
+                        </div>
+                        <div class="col-12 col-md-2 py-1" style="display:inline-block">
+
+                          <button type="submit" class="btn btn-primary">  Искать  </button>
+                        </div>
+                                        {% if request.GET.search %}
+                  <div class="col-12 col-md-2 py-1" style="display:inline-block">
+                    <a href="{% url 'completed_visits' %}" class="btn btn-secondary">Очистить</a>
+                  </div>
+                {% endif %}
+                    </form>
+                </div>
+          <!-- Select form starts -->
+          <div class="row">
+            <div class="col-12">
+                <div class="form-group">
+                    <form method="GET" action="{% url 'completed_visits' %}">
+                        <div class="col-12 col-md-4 py-1" style="display:inline-block">
+                            <select class="form-select form-select-sm" name="ordering">
+                            <option value="name">По имени</option>
+                            <option value="visit_date">По дате</option>
+                            <option value="massage_type">По типу массажа</option>
+                            <option value="visit_price">По цене</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4 py-1" style="display:inline-block">
+                            <button type="submit" class="btn btn-primary">Сортировать</button>
+                        </div>
+                                        {% if request.GET.urlencode %}
+                    <input type="hidden" name="search" value="{{ request.GET.search }}">
+                {% endif %}
+                    </form>
+                </div>
+            </div>
+          </div>
+          </div>
+
+          <!-- Select form ends -->
+          <!-- TABLE starts -->
+          {% if visits_by_letter %}
+    <div class='table-responsive'>
+        <table class='col-12 table table-bordered table-sm table-striped table-hover' border='0' cellpadding='0' cellspacing='0'>
+            <thead>
+                <tr class="thead-secondary text-white">
+                    <th class="text-left text-white"><p class="h5 text-white">Имя</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Возраст</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Дата визита</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Время визита</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Тип массажа</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Цена</p></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for letter, visits in visits_by_letter.items %}
+                <tr>
+                    <td colspan="6" class="text-left">
+                        <strong>{{ letter }}</strong>
+                    </td>
+                </tr>
+                {% for visit in visits %}
+                <tr>
+                    <td class="text-left">
+                        <a href="{{ visit.client.get_absolute_url }}">{{ visit.client.name }}</a>
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.client.age|default_if_none:" - " }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.visit_date }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.visit_time }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.massage_type|default_if_none:" - " }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.visit_price }} сом
+                    </td>
+                </tr>
+                {% endfor %}
+                {% empty %}
+                <p class="h4">Пока нет завершенных визитов.</p>
+                <hr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+                    {% elif visits_by_month %}
+    <div class='table-responsive'>
+        <table class='col-12 table table-bordered table-sm table-striped table-hover' border='0' cellpadding='0' cellspacing='0'>
+            <thead>
+                <tr class="thead-secondary text-white">
+                    <th class="text-left text-white"><p class="h5 text-white">Имя</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Возраст</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Дата визита</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Время визита</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Тип массажа</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Цена</p></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for month, visits in visits_by_month.items %}
+                <tr>
+                    <td colspan="6" class="text-left">
+                        <strong>{{ month|upper }}</strong>
+                    </td>
+                </tr>
+                {% for visit in visits %}
+                <tr>
+                    <td class="text-left">
+                        <a href="{{ visit.client.get_absolute_url }}">{{ visit.client.name }}</a>
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.client.age|default_if_none:" - " }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.visit_date }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.visit_time }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.massage_type|default_if_none:" - " }}
+                    </td>
+                    <td class="text-left text-secondary">
+                        {{ visit.visit_price }} сом
+                    </td>
+                </tr>
+                {% endfor %}
+                {% empty %}
+                <p class="h4">Пока нет завершенных визитов.</p>
+                <hr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        {% elif object_list %}
+          <div class='table-responsive'>
+         <table class='col-12 table table-bordered table-sm table-striped table-hover' border='0' cellpadding='0' cellspacing='0'>
+            <thead>
+                <tr class="thead-secondary text-white">
+                    <th class="text-left text-white"><p class="h5 text-white">Имя</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Возраст</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Дата визита</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Время визита</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Тип массажа</p></th>
+                    <th class="text-left text-white"><p class="h5 text-white">Цена</p></th>
+                </tr>
+            </thead>
+
+        <tbody>
+        {% for visit in object_list %}
+        <tr>
+            <td class="text-left">
+                <a href="{{ visit.client.get_absolute_url }}">{{ visit.client.name }}</a>
+            </td>
+            <td class="text-left text-secondary">
+               {{ visit.client.age|default_if_none:" - " }}
+            </td>
+            <td class="text-left text-secondary">
+                {{ visit.visit_date }}
+            </td>
+            <td class="text-left text-secondary">
+                {{ visit.visit_time }}
+            </td>
+            <td class="text-left text-secondary">
+                {{ visit.massage_type|default_if_none:" - " }}
+            </td>
+            <td class="text-left text-secondary">
+                {{ visit.visit_price }} сом
+            </td>
+        </tr>
+
+        {% empty %}
+        <p class="h4">Пока нет завершенных визитов.</p>
+               <hr>
+        {% endfor %}
+
+        </tbody>
+
+        </table>
+
+        </div>
+                          {% else %}
+        <p>Не найдено ни одного совпадения.</p>
+      {% endif %}
+
+    </div>
+    </div>
+
+{% endblock %}
