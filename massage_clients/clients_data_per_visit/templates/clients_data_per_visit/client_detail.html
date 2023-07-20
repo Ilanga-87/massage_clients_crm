@@ -11,7 +11,7 @@
                 <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age|default_if_none:"-" }}</h3>
                 <h5 class="fw-normal text-primary mb-1">Телефон: <span class="text-secondary">{{ object.phone_number }}</span></h5>
                 <h5 class="fw-normal text-primary mb-1">Дополнительный контакт: <span class="text-secondary">{{ object.another_contact }} {% if not object.another_contact %} ---------- {% endif %}</span></h5>
-                <p><a href="{% url 'client_update' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3 mt-3">Изменить данные</a></p>
+                <p><a href="{% url 'client_update_pv' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3 mt-3">Изменить данные</a></p>
             </div>
 
             <div class="col-12 col-md-7 h-100 d-flex flex-column">
@@ -44,7 +44,7 @@
                 </span>
             </div>
         <div class="col-12 align-items-center text-center"> <p>
-        <a href="{% url 'client_visits_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Изменить визиты</a>
+        <a href="{% url 'client_visits_edit_pv' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Изменить визиты</a>
     </p></div>
             </div>
             <div class="col-12 col-sm-12 h-100 d-flex flex-column">
@@ -66,6 +66,6 @@
         </div>
 
        <div class="col-12 col-md-4 align-items-right text-right mt-5 p-5"> <p>
-        <a href="{% url 'clients_list' %}" role="button" class="btn btn-secondary w-100">Обратно в список клиентов</a>
+        <a href="{% url 'clients_list_pv' %}" role="button" class="btn btn-secondary w-100">Обратно в список клиентов</a>
     </p></div>
 {% endblock %}
