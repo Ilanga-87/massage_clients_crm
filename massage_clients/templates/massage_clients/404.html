@@ -2,5 +2,25 @@
 {% load static %}
 
 {% block content %}
-Ooooops!
+    <!-- About Start -->
+    <div class="container-fluid py-5">
+        <div class="container">
+            <div class="row gx-5">
+
+                <div class="col-12">
+                    <div class="mb-4">
+                        <h1 class="display-4">404 - Страница не найдена</h1>
+                    </div>
+                    <p>Вы находитесь здесь потому, что страница, которую вы запрашиваете, не существует. Возможно, она устарела,
+                        была удалена, или был введен неверный адрес в адресной строке.</p>
+
+<div class="col-12 text-center d-grid gap-2 col-md-6 mx-auto">
+    <a href="{% url 'home' %}" role="button"  class="btn btn-primary py-3">Вернуться на главную</a>
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- About End -->
+
 {% endblock %}

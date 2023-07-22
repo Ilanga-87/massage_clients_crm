@@ -44,7 +44,7 @@ class VisitForm(forms.ModelForm):
         widgets = {
             'visit_date': forms.DateInput(
                 attrs={'type': 'date', }),
-            'visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm'}),
+            'visit_time': forms.TimeInput(attrs={'type': 'time',}),
             'more_info': forms.Textarea(attrs={'rows': 2, 'cols': 4})
         }
 

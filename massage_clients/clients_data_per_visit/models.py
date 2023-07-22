@@ -28,8 +28,8 @@ class Visit(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='visit_client')
     visit_date = models.DateField()
     visit_time = models.TimeField()
-    massage_type = models.CharField(max_length=100)
-    visit_price = models.PositiveIntegerField()
+    massage_type = models.CharField(max_length=100, blank=True)
+    visit_price = models.PositiveIntegerField(blank=True, null=True)
     more_info = models.TextField(blank=True)
     done_and_paid = models.BooleanField(default=False)
 

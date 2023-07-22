@@ -27,20 +27,19 @@
             <div class="col-12 h-100 d-flex flex-column">
             <div class="d-flex mt-auto border-top p-4">
                 <span><h5>Предстоящие визиты: </h5>
-                    {% for visit in object.visit_client.all %}
-                    {% if not visit.completed %}
-                    <hr>
-                        <div class="mt-2">{{ visit.visit_date }}, {{ visit.visit_time }}</div>
-                        <div>{{ visit.massage_type }}: {{ visit.visit_price }}</div>
-                    <div>Предоплачено: {{ visit.prepayment }}</div>
-                    {% if visit.more_info %}
-                    <div><p class="fa fa fa-paperclip"></p>  {{ visit.more_info }}</div>
-                    {% endif %}
-                    {% endif %}
-                    {% empty %}
-                        <p>Нет назначенных визитов</p>
-                    {% endfor %}
+                    {% if future_visits %}
+                        {% for visit in future_visits %}
+                            <hr>
+                                <div class="mt-2">{{ visit.visit_date }}, {{ visit.visit_time }}</div>
+                                <div>{{ visit.massage_type }}: {{ visit.visit_price }}</div>
+                            {% if visit.more_info %}
+                                 <div><p class="fa fa fa-paperclip"></p>  {{ visit.more_info }}</div>
+                            {% endif %}
+                         {% endfor %}
+                    {% else %}
+                            <p>Нет назначенных визитов</p>
 
+                    {% endif %}
                 </span>
             </div>
         <div class="col-12 align-items-center text-center"> <p>
@@ -51,7 +50,7 @@
             <div class="d-flex mt-auto border-top p-4">
                 <span><h5>К оплате: </h5>
                     <hr>
-                        <div class="mt-2">{{ remaining_payments }} сом</div>
+                        <div class="mt-2">{{ remaining_payments|default_if_none:0 }} сом</div>
                 </span>
             </div>
             <div class="d-flex mt-auto border-top p-4">

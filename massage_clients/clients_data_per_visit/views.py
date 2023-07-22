@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse, reverse_lazy
-from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, CharField
+from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, CharField, Sum
 from django.db.models.functions import Concat, Cast
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
@@ -40,6 +40,16 @@ class SingleClientDisplayView(RedirectPermissionRequiredMixin, DetailView):
                            'clients_data_per_visit.add_client',
                            'clients_data_per_visit.change_client',
                            'clients_data_per_visit.delete_client')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        object = self.get_object()
+        future_visits = object.visit_client.filter(done_and_paid=False)
+        context['future_visits'] = future_visits
+        remaining_payments = future_visits.aggregate(remaining_payments_sum=Sum('visit_price'))['remaining_payments_sum']
+
+        context['remaining_payments'] = remaining_payments
+        return context
 
 
 class AllClientsView(RedirectPermissionRequiredMixin, ListView):
@@ -147,7 +157,7 @@ class ClientVisitsEditView(RedirectPermissionRequiredMixin, SingleObjectMixin, F
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
+        return reverse('single_client_pv', kwargs={'pk': self.object.pk, 'name': self.object.name})
 
 
 class SingleClientUpdateView(RedirectPermissionRequiredMixin, UpdateView):
