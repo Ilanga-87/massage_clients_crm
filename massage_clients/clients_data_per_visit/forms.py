@@ -44,7 +44,8 @@ class VisitForm(forms.ModelForm):
             'visit_date': forms.DateInput(
                 attrs={'type': 'date', }),
             'visit_time': forms.TimeInput(attrs={'type': 'time', 'placeholder': 'hh:mm'}),
-            'more_info': forms.Textarea(attrs={'rows': 2, 'cols': 4})
+            'more_info': forms.Textarea(attrs={'rows': 2, 'cols': 4}),
+            'visit_price': forms.NumberInput(attrs={'step': 100})
         }
 
     def __init__(self, *args, **kwargs):
