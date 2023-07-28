@@ -27,7 +27,7 @@
       <h3>{{ client.name|title }}: добавление визитов</h3>
     {% for visit_form in form.forms %}
       <hr>
-      <h5>
+      <h5 class="my-4">
       {% if visit_form.instance.id %}
         Визит {{ visit_form.instance.visit_date }} {{ visit_form.instance.visit_time }}
       {% else %}

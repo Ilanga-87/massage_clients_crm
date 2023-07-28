@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse, reverse_lazy
@@ -10,8 +10,8 @@ from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField,
 from django.db.models.functions import Concat, Cast
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
-from .forms import ClientForm, VisitFormSet
-from .models import Client, Visit
+from .forms import ClientForm, VisitFormSet, PaymentForm
+from .models import Client, Visit, Payment
 from . import service_data
 
 
@@ -43,12 +43,18 @@ class SingleClientDisplayView(RedirectPermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        self.object = self.get_object(queryset=Client.objects.all())
         query = Visit.objects.filter(completed=False).filter(client__pk=self.kwargs['pk'])
-        remaining_payments = 0
+
+        paid_visits_cost = self.object.deposit
+        unpaid_visits_cost = 0
 
         for visit in query:
-            difference = visit.visit_price - visit.prepayment
-            remaining_payments += difference
+            if visit.visit_price:
+                unpaid_visits_cost += visit.visit_price
+            else:
+                unpaid_visits_cost += 0
+        remaining_payments = (paid_visits_cost - unpaid_visits_cost) * -1
         context['remaining_payments'] = remaining_payments
 
         return context
@@ -143,13 +149,13 @@ class ClientVisitsEditView(RedirectPermissionRequiredMixin, SingleObjectMixin, F
         formset = form
 
         if formset.is_valid():
-            visit_balance = 0
+            withdraw = 0
             for visit_form in formset:
-                if not visit_form.cleaned_data.get('DELETE', False):
-                    prepayment = visit_form.cleaned_data.get('prepayment', 0)
-                    visit_balance += prepayment
-
-            self.object.balance += visit_balance
+                if visit_form.cleaned_data.get('completed', True):
+                    visit_price = visit_form.cleaned_data.get('visit_price', 0)
+                    withdraw += visit_price
+            print('*****', withdraw, '/n*****', self.object.deposit)
+            self.object.deposit -= withdraw
             self.object.save()
 
         form.save()
@@ -157,6 +163,35 @@ class ClientVisitsEditView(RedirectPermissionRequiredMixin, SingleObjectMixin, F
 
     def get_success_url(self):
         return reverse('single_client', kwargs={'pk': self.object.pk, 'name': self.object.name})
+
+
+class ClientPaymentsEditView(CreateView):
+    model = Payment
+    template_name = 'clients_data/client_payments_edit.html'
+    form_class = PaymentForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.kwargs.get('pk')
+        name = self.kwargs.get('name')
+        client_name = get_object_or_404(Client, pk=pk, name=name).name
+        context['client_name'] = client_name
+        return context
+
+    def form_valid(self, form):
+        pk = self.kwargs.get('pk')
+        client = get_object_or_404(Client, pk=pk)
+        form.instance.client = client
+
+        pay_amount = form.cleaned_data.get('pay_amount')
+        client.balance += pay_amount
+        client.deposit += pay_amount
+        client.save()
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('single_client', kwargs={'pk': self.kwargs['pk'], 'name': self.kwargs['name']})
 
 
 class SingleClientUpdateView(RedirectPermissionRequiredMixin, UpdateView):

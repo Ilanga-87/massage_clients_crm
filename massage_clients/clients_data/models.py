@@ -16,6 +16,7 @@ class Client(models.Model):
     illnesses = models.TextField(blank=True)
     more_info = models.TextField(blank=True)
     balance = models.PositiveIntegerField(default=0, null=True)
+    deposit = models.IntegerField(default=0, null=True)
 
     def __str__(self):
         return self.name
@@ -44,3 +45,12 @@ class Visit(models.Model):
             raise self.model.DoesNotExist("There is no closest object"
                                           " because there are no objects.")
         return closest_greater
+
+
+class Payment(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payment_client')
+    payment_date = models.DateField(null=True, blank=True)
+    pay_amount = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['payment_date']

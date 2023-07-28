@@ -7,13 +7,14 @@
 {% block client_details %}
     <div class="col-12 team-item text-left align-items-center">
         <div class="row g-0 bg-light rounded overflow-hidden">
+            <!-- Client's contact -->
             <div class="col-12 col-md-5 h-100 d-flex flex-column p-4">
                 <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age|default_if_none:"-" }}</h3>
                 <h5 class="fw-normal text-primary mb-1">Телефон: <span class="text-secondary">{{ object.phone_number }}</span></h5>
                 <h5 class="fw-normal text-primary mb-1">Дополнительный контакт: <span class="text-secondary">{{ object.another_contact }} {% if not object.another_contact %} ---------- {% endif %}</span></h5>
                 <p><a href="{% url 'client_update' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3 mt-3">Изменить данные</a></p>
             </div>
-
+            <!-- Client's contact end -->
             <div class="col-12 col-md-7 h-100 d-flex flex-column">
                 <div class="d-flex mt-auto border-top px-4 py-5">
                     <span><h5>Жалобы и заболевания: </h5>{{ object.illnesses }} {% if not object.illnesses %} ---------- {% endif %}</span>
@@ -24,15 +25,48 @@
                     <span><h5>Дополнительная информация: </h5>{{ object.more_info }} {% if not object.more_info %} ---------- {% endif %}</span>
                 </div>
             </div>
-            <div class="col-12 h-100 d-flex flex-column">
+
+            <!-- Balance part -->
+            <div class="col-12 col-md-6 h-100 d-flex flex-column">
+            <div class="d-flex mt-auto border-top p-4">
+                <span><h5>К оплате: </h5>
+                    <hr>
+                    {% if remaining_payments <= 0 %}
+                        <div class="mt-2">Задолженностей нет</div>
+                    {% else %}
+                        <div class="mt-2">{{ remaining_payments }} сом</div>
+                    {% endif %}
+                </span>
+            </div>
+            </div>
+
+<div class="col-12 col-md-6 h-100 d-flex flex-column">
+            <div class="d-flex mt-auto border-top p-4">
+                <span><h5>Актив за курс: </h5>
+                    <hr>
+                        <div class="mt-2">{{ client.deposit|default_if_none:0 }} сом</div>
+                </span>
+            </div></div>
+<!--<div class="col-12 col-md-4 h-100 d-flex flex-column">-->
+<!--            <div class="d-flex mt-auto border-top p-4">-->
+<!--                <span><h5>Баланс: </h5>-->
+<!--                    <hr>-->
+<!--                        <div class="mt-2">{{ client.balance|default_if_none:0 }} сом</div>-->
+<!--                </span>-->
+<!--            </div></div>-->
+
+<!-- Balance part end -->
+
+<!-- Visits part -->
+            <div class="col-12 col-md-6 h-100 d-flex flex-column">
             <div class="d-flex mt-auto border-top p-4">
                 <span><h5>Предстоящие визиты: </h5>
                     {% for visit in object.visit_client.all %}
                     {% if not visit.completed %}
                     <hr>
                         <div class="mt-2">{{ visit.visit_date }}, {{ visit.visit_time }}</div>
-                        <div>{{ visit.massage_type }}: {{ visit.visit_price }}</div>
-                    <div>Предоплачено: {{ visit.prepayment }}</div>
+
+                        <div>{% if visit.massage_type %} {{ visit.massage_type }} {% else %} ------ {% endif %} : {{ visit.visit_price|default_if_none:0 }} сом</div>
                     {% if visit.more_info %}
                     <div><p class="fa fa fa-paperclip"></p>  {{ visit.more_info }}</div>
                     {% endif %}
@@ -43,28 +77,43 @@
 
                 </span>
             </div>
-        <div class="col-12 align-items-center text-center"> <p>
+        <div class="col-12 align-items-left text-left"> <p>
         <a href="{% url 'client_visits_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Изменить визиты</a>
     </p></div>
             </div>
-            <div class="col-12 col-sm-12 h-100 d-flex flex-column">
+<!-- Visits part end -->
+<!-- Payments part -->
+            <div class="col-12 col-md-6 h-100 d-flex flex-column">
             <div class="d-flex mt-auto border-top p-4">
-                <span><h5>К оплате: </h5>
+                <span><h5>Внесено: </h5>
+                    {% regroup object.payment_client.all by payment_date|date:"F" as payment_months %}
+            {% if payment_months %}
+                {% for month in payment_months %}
                     <hr>
-                        <div class="mt-2">{{ remaining_payments }} сом</div>
+                    <div class="mt-2">
+                        <a data-toggle="collapse" href="#collapse{{ forloop.counter }}">{{ month.grouper }}</a>
+                        <div id="collapse{{ forloop.counter }}" class="collapse">
+                            {% for payment in month.list %}
+                                <p>{{ payment.payment_date }}: {{ payment.pay_amount }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Нет выплат</p>
+            {% endif %}
                 </span>
             </div>
-            <div class="d-flex mt-auto border-top p-4">
-                <span><h5>Баланс: </h5>
-                    <hr>
-                        <div class="mt-2">{{ client.balance }} сом</div>
-                </span>
+        <div class="col-12 align-items-left text-left"> <p>
+        <a href="{% url 'client_payment_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Добавить выплату</a>
+    </p></div>
             </div>
+<!-- Payment part end -->
 
             </div>
             </div>
         </div>
-
+<!-- Button -->
        <div class="col-12 col-md-4 align-items-right text-right mt-5 p-5"> <p>
         <a href="{% url 'clients_list' %}" role="button" class="btn btn-secondary w-100">Обратно в список клиентов</a>
     </p></div>

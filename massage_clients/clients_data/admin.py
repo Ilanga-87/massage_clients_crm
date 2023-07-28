@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Client, Visit
+from .models import Client, Visit, Payment
 
 
 class ClientAdmin(admin.ModelAdmin):
@@ -17,3 +17,10 @@ class VisitAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Visit, VisitAdmin)
+
+
+class PaymentsAdmin(admin.ModelAdmin):
+    list_display = ["client", "payment_date", "pay_amount"]
+
+
+admin.site.register(Payment, PaymentsAdmin)

@@ -44,30 +44,23 @@
     <div class="form-group col-md-3 mb-0">
         {{ visit_form.visit_time|as_crispy_field }}
       </div>
-      <div class="form-group col-md-6 mb-0">
-            {{ visit_form.more_info|as_crispy_field }}
-        </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group col-md-4 mb-0">
+      <div class="form-group col-md-3 mb-0">
         {{ visit_form.massage_type|as_crispy_field }}
       </div>
-      <div class="form-group col-md-4 mb-0">
+      <div class="form-group col-md-3 mb-0">
        {{ visit_form.visit_price|as_crispy_field }}
       </div>
-            <div class="form-group col-md-4 mb-0">
-      {{ visit_form.prepayment|as_crispy_field }}
       </div>
-    </div>
-
 
     <div class="form-row">
-        <div class="form-group col-md-6 mb-0">
-          <div>{{ visit_form.completed|as_crispy_field }}</div>
-        </div>
-          <div class="form-group col-md-6 mb-0">
+      <div class="form-group col-md-6 mb-0">
+      {{ visit_form.more_info|as_crispy_field }}
+      </div>
+        <div class="form-group col-md-6 mb-0 mt-4">
+          <p>{{ visit_form.completed|as_crispy_field }}</p>
           <div class="delete-warning">{{ visit_form.DELETE|as_crispy_field }}</div>
+
+
         </div>
     </div>
 

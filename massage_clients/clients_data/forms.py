@@ -2,7 +2,7 @@ from django import forms
 from django.forms import inlineformset_factory
 from django.utils import formats
 
-from .models import Client, Visit
+from .models import Client, Visit, Payment
 
 
 class ClientForm(forms.ModelForm):
@@ -29,14 +29,13 @@ class ClientForm(forms.ModelForm):
 class VisitForm(forms.ModelForm):
     class Meta:
         model = Visit
-        fields = ('visit_date', 'visit_time', 'massage_type', 'visit_price', 'prepayment', 'more_info', 'completed')
+        fields = ('visit_date', 'visit_time', 'massage_type', 'visit_price', 'more_info', 'completed')
 
         labels = {
             'visit_date': 'Дата приёма',
             'visit_time': 'Время приёма',
             'massage_type': 'Тип массажа',
             'visit_price': 'Цена приёма',
-            'prepayment': 'Внесённая предоплата',
             'more_info': 'Детали',
             'completed': 'Проведен',
         }
@@ -44,7 +43,7 @@ class VisitForm(forms.ModelForm):
         widgets = {
             'visit_date': forms.DateInput(
                 attrs={'type': 'date', }),
-            'visit_time': forms.TimeInput(attrs={'type': 'time',}),
+            'visit_time': forms.TimeInput(attrs={'type': 'time', }),
             'more_info': forms.Textarea(attrs={'rows': 2, 'cols': 4}),
             'visit_price': forms.NumberInput(attrs={'step': 100})
         }
@@ -57,3 +56,20 @@ class VisitForm(forms.ModelForm):
 
 
 VisitFormSet = inlineformset_factory(Client, Visit, form=VisitForm, extra=10)
+
+
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ('payment_date', 'pay_amount')
+
+        labels = {
+            'payment_date': 'Дата выплаты',
+            'pay_amount': 'Сумма выплаты'
+        }
+
+        widgets = {
+            'payment_date': forms.DateInput(
+                attrs={'type': 'date', }),
+            'pay_amount': forms.NumberInput(attrs={'step': 100})
+        }
