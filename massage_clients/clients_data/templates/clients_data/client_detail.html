@@ -12,6 +12,7 @@
                 <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age|default_if_none:"-" }}</h3>
                 <h5 class="fw-normal text-primary mb-1">Телефон: <span class="text-secondary">{{ object.phone_number }}</span></h5>
                 <h5 class="fw-normal text-primary mb-1">Дополнительный контакт: <span class="text-secondary">{{ object.another_contact }} {% if not object.another_contact %} ---------- {% endif %}</span></h5>
+                <h5 class="fw-normal text-primary mb-1">Баланс: <span class="text-secondary">{{ object.balance|default_if_none:0 }} сом </span></h5>
                 <p><a href="{% url 'client_update' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3 mt-3">Изменить данные</a></p>
             </div>
             <!-- Client's contact end -->
@@ -77,9 +78,11 @@
 
                 </span>
             </div>
-        <div class="col-12 align-items-left text-left"> <p>
+        <div class="col-12 align-items-left text-left">
         <a href="{% url 'client_visits_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Изменить визиты</a>
-    </p></div>
+
+        <a href="{% url 'client_completed_visits' pk=object.pk name=object.name %}" role="button" class="btn btn-secondary w-45 mb-3 mx-2">Прошлые визиты</a>
+   </div>
             </div>
 <!-- Visits part end -->
 <!-- Payments part -->
@@ -115,6 +118,6 @@
         </div>
 <!-- Button -->
        <div class="col-12 col-md-4 align-items-right text-right mt-5 p-5"> <p>
-        <a href="{% url 'clients_list' %}" role="button" class="btn btn-secondary w-100">Обратно в список клиентов</a>
+        <a href="{% url 'clients_list' %}" role="button" class="btn btn-secondary w-100">К списку клиентов</a>
     </p></div>
 {% endblock %}

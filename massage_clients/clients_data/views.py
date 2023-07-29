@@ -60,6 +60,107 @@ class SingleClientDisplayView(RedirectPermissionRequiredMixin, DetailView):
         return context
 
 
+class SingleClientCompletedVisits(RedirectPermissionRequiredMixin, ListView):
+    model = Visit
+    template_name = 'clients_data/client_detail_completed_visits.html'
+    context_object_name = 'completed_visits'
+
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
+
+    def get_queryset(self):
+        client_pk = self.kwargs['pk']
+        client_name = self.kwargs['name']
+        completed_visits = Visit.objects.filter(client__pk=client_pk, client__name=client_name, completed=True)
+
+        search_query = self.request.GET.get('search')
+
+        if search_query:
+            completed_visits = completed_visits.filter(
+                Q(client__name__icontains=search_query) |
+                Q(massage_type__icontains=search_query) |
+                Q(visit_date__icontains=search_query) |
+                Q(client__age__icontains=search_query) |
+                Q(visit_time__icontains=search_query) |
+                Q(visit_price__icontains=search_query)
+            ).distinct()
+
+        print("*********!!!!!!!!!*********", completed_visits)
+
+        return completed_visits
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        pk = self.kwargs.get('pk')
+        name = self.kwargs.get('name')
+        client = get_object_or_404(Client, pk=pk, name=name)
+        client_name = client.name
+
+        context['client'] = client
+        context['client_name'] = client_name
+
+        completed_visits = self.get_queryset()
+        context['object_list'] = completed_visits
+
+        ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
+        search_query = self.request.GET.get('search')
+
+        if search_query:
+            completed_visits = completed_visits.filter(
+                Q(client__name__icontains=search_query) |
+                Q(massage_type__icontains=search_query) |
+                Q(visit_date__icontains=search_query) |
+                Q(client__age__icontains=search_query) |
+                Q(visit_time__icontains=search_query) |
+                Q(visit_price__icontains=search_query)
+            ).distinct()
+
+            if ordering == 'visit_date':
+                completed_visits = completed_visits.order_by('visit_date')
+                visits_by_month = {}
+
+                for visit in completed_visits:
+                    month = service_data.months_dict[visit.visit_date.strftime('%B')]
+                    if month in visits_by_month:
+                        visits_by_month[month].append(visit)
+                    else:
+                        visits_by_month[month] = [visit]
+
+                context['visits_by_month'] = visits_by_month
+            elif ordering == 'massage_type':
+                completed_visits = completed_visits.order_by('massage_type')
+            elif ordering == 'visit_price':
+                completed_visits = completed_visits.order_by('visit_price')
+
+            context['object_list'] = completed_visits
+        else:
+            completed_visits = completed_visits
+            if ordering == 'visit_date':
+                completed_visits = completed_visits.order_by('visit_date')
+                visits_by_month = {}
+
+                for visit in completed_visits:
+                    month = service_data.months_dict[visit.visit_date.strftime('%B')]
+                    if month in visits_by_month:
+                        visits_by_month[month].append(visit)
+                    else:
+                        visits_by_month[month] = [visit]
+
+                context['visits_by_month'] = visits_by_month
+
+            elif ordering == 'massage_type':
+                completed_visits = completed_visits.order_by('massage_type')
+            elif ordering == 'visit_price':
+                completed_visits = completed_visits.order_by('visit_price')
+
+            context['object_list'] = completed_visits
+
+        return context
+
+
 class AllClientsView(RedirectPermissionRequiredMixin, ListView):
     model = Client
     template_name = 'clients_data/clients_list.html'
@@ -230,7 +331,7 @@ class TimetableView(RedirectPermissionRequiredMixin, TemplateView):
         dates = [today + timedelta(days=i) for i in range(10)]
 
         # Define the time range from 13:00 to 21:00
-        start_time = datetime.strptime("13:00", "%H:%M").time()
+        start_time = datetime.strptime("10:00", "%H:%M").time()
         end_time = datetime.strptime("21:00", "%H:%M").time()
         time_range = []
         current_time = start_time
@@ -273,7 +374,6 @@ class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
                            'clients_data.delete_client')
 
     def get_queryset(self):
-        queryset = super().get_queryset()
         completed_visits = self.model.objects.filter(completed=True)
 
         search_query = self.request.GET.get('search')
