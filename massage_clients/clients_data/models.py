@@ -49,8 +49,8 @@ class Visit(models.Model):
 
 class Payment(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payment_client')
-    payment_date = models.DateField(null=True, blank=True)
-    pay_amount = models.PositiveIntegerField(null=True, blank=True)
+    payment_date = models.DateField()
+    pay_amount = models.PositiveIntegerField()
 
     class Meta:
         ordering = ['payment_date']

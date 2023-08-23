@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponseRedirect
@@ -330,7 +330,7 @@ class TimetableView(RedirectPermissionRequiredMixin, TemplateView):
         today = datetime.today().date()
         dates = [today + timedelta(days=i) for i in range(10)]
 
-        # Define the time range from 13:00 to 21:00
+        # Define the time range
         start_time = datetime.strptime("10:00", "%H:%M").time()
         end_time = datetime.strptime("21:00", "%H:%M").time()
         time_range = []
@@ -503,8 +503,9 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
-        search_query = self.request.GET.get('search')
+        search_query = self.request.GET.get('search') # Get the search query parameter from the request
 
+        # Filter by search query if it exists
         if search_query:
             actual_visits = self.model.objects.filter(completed=False).filter(
                 Q(client__name__icontains=search_query) |
@@ -515,8 +516,11 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 Q(visit_price__icontains=search_query)
             ).distinct()
 
+            # Sort search by ordering
             if ordering == 'visit_date':
                 actual_visits = actual_visits.order_by('visit_date')
+
+                # Add months name in ordering
                 visits_by_month = {}
 
                 for visit in actual_visits:
@@ -533,6 +537,8 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 actual_visits = actual_visits.order_by('visit_price')
             elif ordering == 'name':
                 actual_visits = actual_visits.order_by('client__name')
+
+                # Add letters in ordering
                 visits_by_letter = {}
                 for visit in actual_visits:
                     first_letter = visit.client.name[0].upper()
@@ -545,10 +551,14 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 context['visits_by_letter'] = visits_by_letter
 
             context['object_list'] = actual_visits
+
+        # Sort by ordering if not search query
         else:
             actual_visits = self.model.objects.filter(completed=False)
             if ordering == 'visit_date':
                 actual_visits = actual_visits.order_by('visit_date')
+
+                # Add months name in ordering
                 visits_by_month = {}
 
                 for visit in actual_visits:
@@ -565,6 +575,8 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 actual_visits = actual_visits.order_by('visit_price')
             elif ordering == 'name':
                 actual_visits = actual_visits.order_by('client__name')
+
+                # Add letters in ordering
                 visits_by_letter = {}
                 for visit in actual_visits:
                     first_letter = visit.client.name[0].upper()
@@ -577,5 +589,68 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 context['visits_by_letter'] = visits_by_letter
 
             context['object_list'] = actual_visits
+
+        return context
+
+
+class BalanceView(TemplateView):
+    template_name = 'clients_data/balance.html'
+
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+        context['client_names'] = Client.objects.values_list('name', flat=True)
+
+        # Get client url if exists
+        client_url = self.kwargs.get('client_url')
+
+        # Get both selections
+        period_selection = self.request.GET.get('period_selection')
+        client_selection = self.request.GET.get('client_selection')
+
+        # Initialize the queryset with all payments
+        queryset = Payment.objects.all()
+
+        # Filter by period if it's selected
+        if period_selection:
+            if int(period_selection) < 2000:
+                delta = int(period_selection)
+                start_date = date.today() - timedelta(days=delta * 30)
+                end_date = date.today()
+            else:
+                start_date = datetime(int(period_selection), 1, 1)
+                end_date = datetime(int(period_selection), 12, 31)
+
+            # Filter based on the payment date
+            queryset = queryset.filter(
+                Q(payment_date__gte=start_date) &
+                Q(payment_date__lte=end_date)
+            )
+
+        # Filter by client if it's selected
+        if client_selection and client_selection != 'all_clients':
+            queryset = queryset.filter(client__name=client_selection)
+
+        # Filter by client if we came from client's detail page
+        if client_url:
+            start_date = date.today() - timedelta(days=3 * 30) # To display only last 3 months payments
+            end_date = date.today()
+            queryset = queryset.filter(
+                Q(client__name=client_url) &
+                Q(payment_date__gte=start_date) &
+                Q(payment_date__lte=end_date)
+            )
+
+        context['payments'] = queryset
+        context['selected_period'] = period_selection
+        context['selected_client'] = client_selection
+        context['client_url'] = client_url
+
+        # Calculate balance
+        total_balance = 0
+        for payment in queryset:
+            total_balance += payment.pay_amount
+
+        context['total_balance'] = total_balance
 
         return context
