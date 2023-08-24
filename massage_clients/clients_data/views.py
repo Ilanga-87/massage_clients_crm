@@ -6,8 +6,8 @@ from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse, reverse_lazy
-from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, CharField
-from django.db.models.functions import Concat, Cast
+from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, CharField, Subquery, OuterRef
+from django.db.models.functions import Concat, Cast, Coalesce
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .forms import ClientForm, VisitFormSet, PaymentForm
@@ -188,6 +188,7 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Calculate the closest visit for each client for context data
         closest_visits = (
             Visit.objects
             .annotate(closest_visit_datetime=ExpressionWrapper(Concat(
@@ -196,6 +197,7 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
                 output_field=DateTimeField()))
             .values('client_id')
             .annotate(closest_visit=Min('closest_visit_datetime'))
+            .order_by('closest_visit')
         )
 
         closest_visit_dict = {
@@ -206,20 +208,23 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
         ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
         if ordering == 'name':
             context['object_list'] = self.model.objects.order_by('name')
-        elif ordering == 'closest_visit':
-            closest_visits = (
-                Visit.objects
-                .annotate(closest_visit_datetime=Cast(
-                    Concat(F('visit_date'), Value(' '), Cast(F('visit_time'), output_field=CharField())),
-                    output_field=DateTimeField()
-                ))
-                .values('client_id')
-                .annotate(closest_visit=Min('closest_visit_datetime'))
-                .order_by('closest_visit')
+        else:  # Now the list is ordered by closest visit by default.
+            # So "elif ordering == 'closest_visit'" was transformed to "else"
+            client_ids = [visit['client_id'] for visit in closest_visits]
+
+            # Order clients by closest visit dates
+            clients_ordered_by_closest_visit = self.model.objects.filter(pk__in=client_ids)
+
+            # Create a dictionary to map client IDs to their closest visit dates
+            closest_visit_dict = {visit['client_id']: visit['closest_visit'] for visit in closest_visits}
+
+            # Sort the clients based on their closest visit dates
+            sorted_clients = sorted(
+                clients_ordered_by_closest_visit,
+                key=lambda client: closest_visit_dict.get(client.id, None)
             )
 
-            client_ids = [visit['client_id'] for visit in closest_visits]
-            context['object_list'] = self.model.objects.filter(pk__in=client_ids)
+            context['object_list'] = sorted_clients
 
         return context
 
