@@ -86,31 +86,41 @@
             </div>
 <!-- Visits part end -->
 <!-- Payments part -->
-            <div class="col-12 col-md-6 h-100 d-flex flex-column">
-            <div class="d-flex mt-auto border-top p-4">
-                <span><h5>Внесено: </h5>
-                    {% regroup object.payment_client.all by payment_date|date:"F" as payment_months %}
-            {% if payment_months %}
-                {% for month in payment_months %}
-                    <hr>
-                    <div class="mt-2">
-                        <a data-toggle="collapse" href="#collapse{{ forloop.counter }}">{{ month.grouper }}</a>
-                        <div id="collapse{{ forloop.counter }}" class="collapse">
-                            {% for payment in month.list %}
-                                <p>{{ payment.payment_date }}: {{ payment.pay_amount }}</p>
-                            {% endfor %}
+    <div class="col-12 col-md-6 h-100 d-flex flex-column">
+        <div class="d-flex mt-auto border-top p-4">
+            <span><h5>Внесено: </h5>
+
+                {% regroup object.payment_client.all by payment_date|date:"Y" as payment_years %}
+                {% if payment_years %}
+                    {% for year in payment_years %}
+                        <hr>
+                        <div class="mt-2">
+                            <a data-toggle="collapse" href="#collapse{{ forloop.counter }}">{{ year.grouper }}</a>
+                            <div id="collapse{{ forloop.counter }}" class="collapse">
+                                {% regroup year.list by payment_date|date:"F" as payment_months %}
+                                {% for month in payment_months %}
+                                    <div class="mt-2">
+                                        <a data-toggle="collapse" href="#collapse{{ forloop.parentloop.counter }}_{{ forloop.counter }}">{{ month.grouper }}</a>
+                                        <div id="collapse{{ forloop.parentloop.counter }}_{{ forloop.counter }}" class="collapse">
+                                            {% for payment in month.list %}
+                                                <p>{{ payment.payment_date }}: {{ payment.pay_amount }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>Нет выплат</p>
-            {% endif %}
-                </span>
-            </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Нет выплат</p>
+                {% endif %}
+            </span>
+        </div>
         <div class="col-12 align-items-left text-left"> <p>
-        <a href="{% url 'client_payment_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Добавить выплату</a>
-    </p></div>
-            </div>
+            <a href="{% url 'client_payment_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Добавить выплату</a>
+        </p></div>
+    </div>
+
 <!-- Payment part end -->
 
             </div>

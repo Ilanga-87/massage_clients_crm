@@ -3,6 +3,7 @@ from datetime import datetime, date, timedelta
 from django.contrib.auth.views import LoginView
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
+from django.utils import timezone
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse, reverse_lazy
@@ -200,28 +201,24 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
             .order_by('closest_visit')
         )
 
+        # Create a dictionary to map client IDs to their closest visit dates
         closest_visit_dict = {
             visit['client_id']: visit['closest_visit']
             for visit in closest_visits}
+
+        all_clients = Client.objects.all()
+
         context['closest_visits'] = closest_visit_dict
 
-        ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
+        ordering = self.request.GET.get('ordering', 'closest_visit')  # Get the ordering parameter from the request
         if ordering == 'name':
             context['object_list'] = self.model.objects.order_by('name')
-        else:  # Now the list is ordered by closest visit by default.
-            # So "elif ordering == 'closest_visit'" was transformed to "else"
-            client_ids = [visit['client_id'] for visit in closest_visits]
-
-            # Order clients by closest visit dates
-            clients_ordered_by_closest_visit = self.model.objects.filter(pk__in=client_ids)
-
-            # Create a dictionary to map client IDs to their closest visit dates
-            closest_visit_dict = {visit['client_id']: visit['closest_visit'] for visit in closest_visits}
-
+        elif ordering == 'closest_visit':
             # Sort the clients based on their closest visit dates
+            sentinel_datetime = datetime(9999, 12, 31, tzinfo=timezone.utc)
             sorted_clients = sorted(
-                clients_ordered_by_closest_visit,
-                key=lambda client: closest_visit_dict.get(client.id, None)
+                all_clients,
+                key=lambda client: closest_visit_dict.get(client.id, sentinel_datetime)
             )
 
             context['object_list'] = sorted_clients
