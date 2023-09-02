@@ -1,15 +1,18 @@
 from datetime import datetime, date, timedelta
 
-from django.contrib.auth.views import LoginView
+from dateutil.relativedelta import relativedelta
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.utils import timezone
-from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView)
+from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView, DeleteView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse, reverse_lazy
-from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, CharField, Subquery, OuterRef
-from django.db.models.functions import Concat, Cast, Coalesce
+from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, Sum
+from django.db.models.functions import Concat
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models.functions import ExtractYear, ExtractMonth
+from django.http import JsonResponse
 
 from .forms import ClientForm, VisitFormSet, PaymentForm
 from .models import Client, Visit, Payment
@@ -308,6 +311,20 @@ class SingleClientUpdateView(RedirectPermissionRequiredMixin, UpdateView):
                            'clients_data.delete_client')
 
 
+class SingleClientDeleteView(RedirectPermissionRequiredMixin, DeleteView):
+    permission_required = ('clients_data.view_client',
+                           'clients_data.add_client',
+                           'clients_data.change_client',
+                           'clients_data.delete_client')
+
+    model = Client
+    context_object_name = 'client'
+    success_url = reverse_lazy('clients_list')
+
+    def form_valid(self, form):
+        return super(SingleClientDeleteView, self).form_valid(form)
+
+
 class ScheduleView(RedirectPermissionRequiredMixin, TemplateView):
     template_name = 'clients_data/schedule_table_ex.html'
 
@@ -505,7 +522,7 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
-        search_query = self.request.GET.get('search') # Get the search query parameter from the request
+        search_query = self.request.GET.get('search')  # Get the search query parameter from the request
 
         # Filter by search query if it exists
         if search_query:
@@ -635,7 +652,7 @@ class BalanceView(TemplateView):
 
         # Filter by client if we came from client's detail page
         if client_url:
-            start_date = date.today() - timedelta(days=3 * 30) # To display only last 3 months payments
+            start_date = date.today() - timedelta(days=3 * 30)  # To display only last 3 months payments
             end_date = date.today()
             queryset = queryset.filter(
                 Q(client__name=client_url) &
@@ -656,3 +673,81 @@ class BalanceView(TemplateView):
         context['total_balance'] = total_balance
 
         return context
+
+
+# Charts views
+
+
+@staff_member_required
+def get_filter_options(request):
+    # Get distinct year
+    grouped_payments = Payment.objects.annotate(year=ExtractYear("payment_date")).values("year").order_by("-year") \
+        .distinct()
+    options = [payment["year"] for payment in grouped_payments]
+
+    # Get distinct client names
+    client_names = Client.objects.values_list("name", flat=True).distinct()
+
+    return JsonResponse({
+        "options": options,
+        "client_names": list(client_names),
+    })
+
+
+@staff_member_required
+def get_balance_chart(request, period):
+    client_name = request.GET.get("client")
+    payments = Payment.objects.all()
+
+    if period == "last_3_months":
+        # Calculate the date range for the last 3 months
+        end_date = timezone.now()
+        start_date = end_date - relativedelta(months=3)
+    elif period == "last_6_months":
+        # Calculate the date range for the last 6 months
+        end_date = timezone.now()
+        start_date = end_date - relativedelta(months=6)
+    elif period == "last_year":
+        # Calculate the date range for the last year (12 months)
+        end_date = timezone.now()
+        start_date = end_date - relativedelta(months=12)
+    else:
+        # Year option selected, calculate date range accordingly
+        start_date = timezone.make_aware(datetime(year=int(period), month=1, day=1))
+        end_date = timezone.make_aware(
+            datetime(year=int(period), month=12, day=31, hour=23, minute=59, second=59))
+
+    payments = payments.filter(payment_date__range=[start_date, end_date])
+
+    if client_name:
+        payments = payments.filter(client__name=client_name)
+
+    grouped_payments = payments.annotate(price=F("pay_amount")).annotate(month=ExtractMonth("payment_date")) \
+        .values("month").annotate(average=Sum("pay_amount")).values("month", "average").order_by("month")
+
+    payments_dict = service_data.get_year_dict()
+
+    for group in grouped_payments:
+        payments_dict[service_data.months_list[group["month"] - 1]] = round(group["average"], 2)
+
+    # Calculate total_sum
+    total_sum = payments.aggregate(total_sum=Sum("pay_amount"))["total_sum"] or 0
+
+    return JsonResponse({
+        "title": f"Payments in {period}",
+        "data": {
+            "labels": list(payments_dict.keys()),
+            "datasets": [{
+                "label": "Сумма (сом)",
+                "backgroundColor": "#13C5DD",
+                "borderColor": "#13C5DD",
+                "data": list(payments_dict.values()),
+            }]
+        },
+        "total_sum": total_sum,
+    })
+
+
+@staff_member_required
+def statistics_view(request, client_name=None, period=None):
+    return render(request, 'clients_data/balance_chart.html', {})

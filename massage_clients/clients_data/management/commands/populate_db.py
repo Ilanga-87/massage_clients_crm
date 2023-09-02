@@ -1,3 +1,4 @@
+import datetime
 import random
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -17,7 +18,7 @@ class Command(BaseCommand):
             age = random.randint(20, 80)
             illnesses = fake.paragraph()
             more_info = fake.paragraph()
-            balance = random.randint(0, 10000)
+            balance = 0
             deposit = random.randint(0, 1000)
 
             client = Client.objects.create(
@@ -35,21 +36,26 @@ class Command(BaseCommand):
             for _ in range(random.randint(1, 5)):
                 payment_date = timezone.now() - timezone.timedelta(days=random.randint(1, 1095))
                 pay_amount = random.randint(1000, 20000)
+                balance += pay_amount
                 Payment.objects.create(client=client, payment_date=payment_date, pay_amount=pay_amount)
+            client.balance = balance
+            client.save()
 
             # Create visit records for the client
             for _ in range(random.randint(1, 5)):
                 visit_date = timezone.datetime(2023, 9, random.randint(1, 30), random.randint(8, 19), 0)
                 visit_time = visit_date.time()
-                massage_type = random.choice(['spine', 'neck', 'total', 'anti-cellulite', 'hands', 'chest', 'legs'])
+                massage_type = random.choice(['Спина', 'Шея', 'Общий', 'Антицеллюлитный', 'Руки и плечи',
+                                              'Грудной отдел', 'Ноги', 'Укрепляющий', 'Расслабляющий', 'Лимфодренажный'])
                 visit_price = random.randint(1000, 5000)
+                today = datetime.datetime.today()
                 Visit.objects.create(
                     client=client,
                     visit_date=visit_date,
                     visit_time=visit_time,
                     massage_type=massage_type,
                     visit_price=visit_price,
-                    completed=True
+                    completed=visit_date < today
                 )
 
             self.stdout.write(self.style.SUCCESS(f'Successfully created data for client: {name}'))

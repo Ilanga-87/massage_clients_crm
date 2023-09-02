@@ -492,3 +492,9 @@ table {
   width: 10em;
   background: yellow;
 }
+
+.corner-icon {
+    position: absolute;
+    top: 10px; /* Adjust the top and right values to position the icon as needed */
+    right: 10px;
+}

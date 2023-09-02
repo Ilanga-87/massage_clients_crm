@@ -1,0 +1,207 @@
+{% extends 'clients_data/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %} Баланс {% endblock %}
+
+{% block content %}
+<div class="container">
+     <h1 class="mb-5" id="balanceHeading">Общая сумма: <span id="totalSumPlaceholder"></span> сом</h1>
+      <form id="filterForm">
+        <label for="period">Выберите период:</label>
+        <select name="period" id="period">
+        </select>
+
+        <label for="client" class="ml-5">Выберите имя клиента:</label>
+        <select name="client" id="client" class="mr-2">
+        </select>
+
+        <input type="submit" class="btn btn-primary mx-3" value="Подтвердить" name="_load">
+      </form>
+      <div class="row">
+        <div class="col-12">
+          <canvas id="paymentsChart"></canvas>
+        </div>
+      </div>
+      <script>
+        let paymentsCtx = document.getElementById("paymentsChart").getContext("2d");
+        let paymentsChart = new Chart(paymentsCtx, {
+          type: "bar",
+          options: {
+            responsive: true,
+            title: {
+              display: false,
+              text: ""
+            },
+            plugins: {
+              datalabels: {
+                anchor: 'end',
+                align: 'end',
+                formatter: function(value, context) {
+                  return value.toFixed(2);
+                },
+                color: '#333', // Label text color
+                font: {
+                  weight: 'bold' // Label text weight
+                }
+              }
+            }
+          },
+          plugins: [ChartDataLabels] // Include the datalabels plugin
+        });
+
+        $(document).ready(function() {
+          $.ajax({
+            url: "/clients-data/balance/options/",
+            type: "GET",
+            dataType: "json",
+            success: (jsonResponse) => {
+
+              // Clear existing options
+              $("#period").empty();
+
+              /*
+
+              // Load the fixed time range options
+              $("#period").append(new Option("Последние 3 месяца", "last_3_months"));
+              $("#period").append(new Option("Последние 6 месяцев", "last_6_months"));
+              $("#period").append(new Option("Последний год", "last_year"));
+
+              */
+
+              // Load the dynamic year options
+              jsonResponse.options.forEach(option => {
+                $("#period").append(new Option(option, option));
+              });
+
+              // Clear existing options
+              $("#client").empty();
+
+              // Add an "All Clients" option at the beginning
+              $("#client").append(new Option("Все клиенты", ""));
+
+              // Load all client names
+              jsonResponse.client_names.forEach(name => {
+                $("#client").append(new Option(name, name));
+              });
+
+               // Check if the client is pre-selected in the link
+               var currentURL = window.location.href;
+               var clientNameMatch = currentURL.match(/\/balance\/chart\/([^/]+)/);
+               if (clientNameMatch) {
+               var encodedClientName = clientNameMatch[1];
+
+                // Decode the client name from URL encoding
+                var clientName = decodeURIComponent(encodedClientName);
+
+                }
+                console.log("Client Name from URL:", clientName);
+                 $("#client").val(clientName);
+
+            if (clientName) {
+                // Set the selected client in the dropdown
+                console.log("Client Name from URL:", clientName);
+                $("#client").val(clientName);
+                loadAllCharts($("#period").children().first().val(), clientName);
+            }
+
+              // Load data for the first option (assuming no specific client is selected)
+              loadAllCharts($("#period").children().first().val(), $("#client").val());
+            },
+            error: () => console.log("Failed to fetch chart filter options!")
+          });
+        });
+
+        $("#filterForm").on("submit", (event) => {
+          event.preventDefault();
+
+          const period = $("#period").val();
+          const client = $("#client").val();
+          loadAllCharts(period, client)
+        });
+
+        function loadChart(chart, endpoint) {
+          $.ajax({
+            url: endpoint,
+            type: "GET",
+            dataType: "json",
+            success: (jsonResponse) => {
+              // Extract data from the response
+              const title = jsonResponse.title;
+              const labels = jsonResponse.data.labels;
+              const datasets = jsonResponse.data.datasets;
+              const totalSum = jsonResponse.total_sum;
+
+              $("#totalSumPlaceholder").text(totalSum.toFixed(2));
+
+              // Reset the current chart
+              chart.data.datasets = [];
+              chart.data.labels = [];
+
+              // Load new data into the chart
+              chart.options.title.text = title;
+              chart.options.title.display = true;
+              chart.data.labels = labels;
+              datasets.forEach(dataset => {
+                chart.data.datasets.push(dataset);
+              });
+              chart.update();
+            },
+            error: () => console.log("Failed to fetch chart data from " + endpoint + "!")
+          });
+        }
+
+        function loadAllCharts(period, client) {
+          loadChart(paymentsChart, `/clients-data/balance/data/${period}/?client=${client}`);
+        }
+
+        $("#filterForm").on("submit", function(event) {
+            event.preventDefault();
+
+            updateHeading();
+        });
+
+        // Initial update when the page loads
+        updateHeading();
+
+        function updateHeading() {
+          const currentURL = window.location.href;
+          const clientNameMatch = currentURL.match(/\/balance\/chart\/([^/]+)/);
+
+          let clientName = "";
+          if (clientNameMatch) {
+            const encodedClientName = clientNameMatch[1];
+            clientName = decodeURIComponent(encodedClientName);
+          }
+
+          const selectedPeriod = $("#period").val() || "2023"; // Default to "last_3_months" if no period is selected
+
+          if (clientName === "") {
+            clientName = "все клиенты";
+          }
+
+          let periodText = "";
+          switch (selectedPeriod) {
+            case "last_3_months":
+              periodText = "последние 3 месяца";
+              break;
+            case "last_6_months":
+              periodText = "последние 6 месяцев";
+              break;
+            case "last_year":
+              periodText = "последний год";
+              break;
+            default:
+              periodText = selectedPeriod; // Use the period as is if not recognized
+          }
+
+          // Update the heading text
+          $("#clientNamePlaceholder").text(clientName);
+          $("#periodPlaceholder").text(periodText);
+        }
+
+      </script>
+    </div>
+
+
+{% endblock %}
