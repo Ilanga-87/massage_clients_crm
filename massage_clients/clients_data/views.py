@@ -91,8 +91,6 @@ class SingleClientCompletedVisits(RedirectPermissionRequiredMixin, ListView):
                 Q(visit_price__icontains=search_query)
             ).distinct()
 
-        print("*********!!!!!!!!!*********", completed_visits)
-
         return completed_visits
 
     def get_context_data(self, **kwargs):
@@ -191,6 +189,7 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get('search')
 
         # Calculate the closest visit for each client for context data
         closest_visits = (
@@ -204,27 +203,63 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
             .order_by('closest_visit')
         )
 
+        all_clients = Client.objects.all()
+
         # Create a dictionary to map client IDs to their closest visit dates
         closest_visit_dict = {
             visit['client_id']: visit['closest_visit']
             for visit in closest_visits}
 
-        all_clients = Client.objects.all()
-
         context['closest_visits'] = closest_visit_dict
 
-        ordering = self.request.GET.get('ordering', 'closest_visit')  # Get the ordering parameter from the request
-        if ordering == 'name':
-            context['object_list'] = self.model.objects.order_by('name')
-        elif ordering == 'closest_visit':
-            # Sort the clients based on their closest visit dates
-            sentinel_datetime = datetime(9999, 12, 31, tzinfo=timezone.utc)
-            sorted_clients = sorted(
-                all_clients,
-                key=lambda client: closest_visit_dict.get(client.id, sentinel_datetime)
-            )
+        if search_query:
+            ordering = self.request.GET.get('ordering', 'closest_visit')  # Get the ordering parameter from the request
+            closest_visits = closest_visits.filter(
+                Q(client__name__icontains=search_query) |
+                Q(client__phone_number__icontains=search_query) |
+                Q(visit_date__icontains=search_query) |
+                Q(visit_time__icontains=search_query) |
+                Q(client__age__icontains=search_query)
+            ).distinct()
 
-            context['object_list'] = sorted_clients
+            # Create a set of client IDs that match the filtered closest_visits
+            matching_client_ids = set(visit['client_id'] for visit in closest_visits)
+
+            # Create a dictionary to map client IDs to their closest visit dates
+            closest_visit_dict = {
+                visit['client_id']: visit['closest_visit']
+                for visit in closest_visits}
+            # Filter the clients that have matching IDs
+            clients_to_display = [
+                client for client in all_clients if client.id in matching_client_ids
+            ]
+            context['closest_visits'] = closest_visit_dict
+
+            if ordering == 'name':
+                context['object_list'] = sorted(clients_to_display, key=lambda client: client.name)
+            else:
+                # Sort the clients based on their closest visit dates
+                sentinel_datetime = datetime(9999, 12, 31, tzinfo=timezone.utc)
+                sorted_clients = sorted(
+                    clients_to_display,
+                    key=lambda client: closest_visit_dict.get(client.id, sentinel_datetime)
+                )
+
+                context['object_list'] = sorted_clients
+
+        else:
+            ordering = self.request.GET.get('ordering', 'closest_visit')  # Get the ordering parameter from the request
+            if ordering == 'name':
+                context['object_list'] = self.model.objects.order_by('name')
+            else:
+                # Sort the clients based on their closest visit dates
+                sentinel_datetime = datetime(9999, 12, 31, tzinfo=timezone.utc)
+                sorted_clients = sorted(
+                    all_clients,
+                    key=lambda client: closest_visit_dict.get(client.id, sentinel_datetime)
+                )
+
+                context['object_list'] = sorted_clients
 
         return context
 
@@ -260,7 +295,6 @@ class ClientVisitsEditView(RedirectPermissionRequiredMixin, SingleObjectMixin, F
                 if visit_form.cleaned_data.get('completed', True):
                     visit_price = visit_form.cleaned_data.get('visit_price', 0)
                     withdraw += visit_price
-            print('*****', withdraw, '/n*****', self.object.deposit)
             self.object.deposit -= withdraw
             self.object.save()
 
@@ -323,15 +357,6 @@ class SingleClientDeleteView(RedirectPermissionRequiredMixin, DeleteView):
 
     def form_valid(self, form):
         return super(SingleClientDeleteView, self).form_valid(form)
-
-
-class ScheduleView(RedirectPermissionRequiredMixin, TemplateView):
-    template_name = 'clients_data/schedule_table_ex.html'
-
-    permission_required = ('clients_data.view_client',
-                           'clients_data.add_client',
-                           'clients_data.change_client',
-                           'clients_data.delete_client')
 
 
 class TimetableView(RedirectPermissionRequiredMixin, TemplateView):

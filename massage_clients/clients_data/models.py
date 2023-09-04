@@ -31,7 +31,6 @@ class Visit(models.Model):
     visit_time = models.TimeField()
     massage_type = models.CharField(max_length=100, blank=True)
     visit_price = models.PositiveIntegerField(null=True, blank=True)
-    prepayment = models.PositiveIntegerField(null=True, blank=True, default=0)
     more_info = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
 

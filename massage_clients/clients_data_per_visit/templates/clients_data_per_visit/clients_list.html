@@ -39,6 +39,9 @@
                         </div>
                         <div class="col-12 col-md-2 py-1" style="display:inline-block">
                             <button type="submit" class="btn btn-primary">Сортировать</button>
+                            {% if request.GET.urlencode %}
+                    <input type="hidden" name="search" value="{{ request.GET.search }}">
+                {% endif %}
                         </div>
                     </form>
                 </div>

@@ -48,13 +48,6 @@
                         <div class="mt-2">{{ client.deposit|default_if_none:0 }} сом</div>
                 </span>
             </div></div>
-<!--<div class="col-12 col-md-4 h-100 d-flex flex-column">-->
-<!--            <div class="d-flex mt-auto border-top p-4">-->
-<!--                <span><h5>Баланс: </h5>-->
-<!--                    <hr>-->
-<!--                        <div class="mt-2">{{ client.balance|default_if_none:0 }} сом</div>-->
-<!--                </span>-->
-<!--            </div></div>-->
 
 <!-- Balance part end -->
 
@@ -120,13 +113,13 @@
             <a href="{% url 'client_payment_edit' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Добавить выплату</a>
         </p></div>
     </div>
+
+<!-- Payment part end -->
         <div class="corner-icon text-right">
             <a href="{% url 'client_delete' pk=object.pk name=object.name %}">
-                <i class="fa fa-square-xmark fa-2xl text-danger"></i> <!-- Adjust the icon class accordingly -->
+                <i class="fa fa-square-xmark fa-2xl text-danger"></i>
             </a>
         </div>
-<!-- Payment part end -->
-
             </div>
             </div>
         </div>

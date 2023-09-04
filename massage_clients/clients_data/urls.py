@@ -15,6 +15,7 @@ urlpatterns = [
     path('schedule/', views.TimetableView.as_view(), name='schedule'),
     path('completed-visits/', views.CompletedVisitsListView.as_view(), name='completed_visits'),
     path('actual-visits/', views.ActualVisitsListView.as_view(), name='actual_visits'),
+    # balance part
     path('balance/options/', views.get_filter_options, name='balance_options'),
     path('balance/data/<int:period>/', views.get_balance_chart, name='balance_data'),
     path('balance/chart/<str:client_name>', views.statistics_view, name='balance_chart_client'),
