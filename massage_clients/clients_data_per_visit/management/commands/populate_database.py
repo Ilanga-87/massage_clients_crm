@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
             # Create visit records for the client
             for _ in range(random.randint(1, 5)):
-                visit_date = timezone.datetime(2023, 9, random.randint(1, 30), random.randint(8, 19), 0)
+                visit_date = timezone.datetime(2005, random.randint(1, 12), random.randint(1, 30), random.randint(8, 19), 0)
                 visit_time = visit_date.time()
                 massage_type = random.choice(['Спина', 'Шея', 'Общий', 'Антицеллюлитный', 'Руки и плечи',
                                               'Грудной отдел', 'Ноги', 'Укрепляющий', 'Расслабляющий', 'Лимфодренажный'])

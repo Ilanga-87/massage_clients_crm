@@ -12,8 +12,8 @@
                 <h3 class="mb-4 mt-4">{{ object.name }}, {{ object.sex }}, {{ object.age|default_if_none:"-" }}</h3>
                 <h5 class="fw-normal text-primary mb-1">Телефон: <span class="text-secondary">{{ object.phone_number }}</span></h5>
                 <h5 class="fw-normal text-primary mb-1">Дополнительный контакт: <span class="text-secondary">{{ object.another_contact }} {% if not object.another_contact %} ---------- {% endif %}</span></h5>
-                <h5 class="fw-normal text-primary mb-1"><a href="{% url 'balance_chart_client' client_name=object.name %}">Баланс</a>: <span class="text-secondary">{{ object.balance|default_if_none:0 }} сом </span></h5>
-                <p><a href="{% url 'client_update' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3 mt-3">Изменить данные</a></p>
+                <h5 class="fw-normal text-primary mb-1"><a href="{% url 'balance_chart_client_pv' client_name=object.name %}">Баланс</a>: <span class="text-secondary">{{ object.balance|default_if_none:0 }} сом </span></h5>
+                <p><a href="{% url 'client_update_pv' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3 mt-3">Изменить данные</a></p>
             </div>
             <!-- Client's contact end -->
             <div class="col-12 col-md-7 h-100 d-flex flex-column">

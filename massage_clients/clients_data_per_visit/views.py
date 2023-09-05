@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta
 
+from dateutil.relativedelta import relativedelta
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.views import LoginView
-from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.generic import (TemplateView, ListView, CreateView, DetailView, FormView, UpdateView, DeleteView)
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse, reverse_lazy
 from django.db.models import Min, F, Q, Value, ExpressionWrapper, DateTimeField, CharField, Sum
-from django.db.models.functions import Concat, Cast
+from django.db.models.functions import Concat, Cast, ExtractYear, ExtractMonth
 from django.contrib.auth.mixins import PermissionRequiredMixin
 
 from .forms import ClientForm, VisitFormSet
@@ -491,7 +493,81 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
         return context
 
 
-# Users Views
+# Charts views
 
-class UserLoginView(LoginView):
-    pass
+
+@staff_member_required
+def get_filter_options(request):
+    # Get distinct year
+    grouped_payments = Visit.objects.annotate(year=ExtractYear("visit_date")).values("year").order_by("-year") \
+        .distinct()
+    options = [payment["year"] for payment in grouped_payments]
+
+    # Get distinct client names
+    client_names = Client.objects.values_list("name", flat=True).distinct()
+
+    return JsonResponse({
+        "options": options,
+        "client_names": list(client_names),
+    })
+
+
+@staff_member_required
+def get_balance_chart(request, period):
+    client_name = request.GET.get("client")
+    visits = Visit.objects.all()
+
+    if period == "last_3_months":
+        # Calculate the date range for the last 3 months
+        end_date = timezone.now()
+        start_date = end_date - relativedelta(months=3)
+    elif period == "last_6_months":
+        # Calculate the date range for the last 6 months
+        end_date = timezone.now()
+        start_date = end_date - relativedelta(months=6)
+    elif period == "last_year":
+        # Calculate the date range for the last year (12 months)
+        end_date = timezone.now()
+        start_date = end_date - relativedelta(months=12)
+    else:
+        # Year option selected, calculate date range accordingly
+        start_date = timezone.make_aware(datetime(year=int(period), month=1, day=1))
+        end_date = timezone.make_aware(
+            datetime(year=int(period), month=12, day=31, hour=23, minute=59, second=59))
+
+    visits = visits.filter(visit_date__range=[start_date, end_date])
+
+    if client_name:
+        visits = visits.filter(client__name=client_name)
+
+    grouped_visits = visits.annotate(price=F("visit_price")).annotate(month=ExtractMonth("visit_date")) \
+        .values("month").annotate(average=Sum("visit_price")).values("month", "average").order_by("month")
+
+    visits_dict = service_data.get_year_dict()
+
+    for group in grouped_visits:
+        visits_dict[service_data.months_list[group["month"] - 1]] = round(group["average"], 2)
+
+    # Calculate total_sum
+    total_sum = visits.aggregate(total_sum=Sum("visit_price"))["total_sum"] or 0
+
+    return JsonResponse({
+        "title": f"Payments in {period}",
+        "data": {
+            "labels": list(visits_dict.keys()),
+            "datasets": [{
+                "label": "Сумма (сом)",
+                "backgroundColor": "#13C5DD",
+                "borderColor": "#13C5DD",
+                "data": list(visits_dict.values()),
+            }]
+        },
+        "total_sum": total_sum,
+    })
+
+
+@staff_member_required
+def statistics_view(request, client_name=None, period=None):
+    return render(request, 'clients_data_per_visit/balance_chart.html', {})
+
+
