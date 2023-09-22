@@ -30,9 +30,11 @@
           <div class="form-row">
       <div class="form-group col-md-6 mb-0">
         {{ form.payment_date|as_crispy_field }}
+        {{ form.payment_date.errors }}
       </div>
     <div class="form-group col-md-6 mb-0">
         {{ form.pay_amount|as_crispy_field }}
+        {{ form.pay_amount.errors }}
       </div>
 
     </div>

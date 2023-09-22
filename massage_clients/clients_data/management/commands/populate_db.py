@@ -35,7 +35,7 @@ class Command(BaseCommand):
             # Create payment records for the client
             for _ in range(random.randint(1, 5)):
                 payment_date = timezone.now() - timezone.timedelta(days=random.randint(1, 1095))
-                pay_amount = random.randint(1000, 20000)
+                pay_amount = random.randint(10, 200) * 100
                 balance += pay_amount
                 Payment.objects.create(client=client, payment_date=payment_date, pay_amount=pay_amount)
             client.balance = balance
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 visit_time = visit_date.time()
                 massage_type = random.choice(['Спина', 'Шея', 'Общий', 'Антицеллюлитный', 'Руки и плечи',
                                               'Грудной отдел', 'Ноги', 'Укрепляющий', 'Расслабляющий', 'Лимфодренажный'])
-                visit_price = random.randint(1000, 5000)
+                visit_price = random.randint(10, 50) * 100
                 today = datetime.datetime.today()
                 Visit.objects.create(
                     client=client,

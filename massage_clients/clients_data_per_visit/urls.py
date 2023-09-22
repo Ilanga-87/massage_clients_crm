@@ -10,6 +10,8 @@ urlpatterns = [
     path('clients/<int:pk>/<str:name>/client/delete/', views.SingleClientDeleteView.as_view(), name='client_delete_pv'),
     path('schedule/', views.TimetableView.as_view(), name='schedule_pv'),
     path('completed-visits/', views.CompletedVisitsListView.as_view(), name='completed_visits_pv'),
+    path('clients/<int:pk>/<str:name>/completed-visits/', views.SingleClientCompletedVisits.as_view(),
+         name='client_completed_visits_pv'),
     path('actual-visits/', views.ActualVisitsListView.as_view(), name='actual_visits_pv'),
     # balance part
     path('balance/options/', views.get_filter_options, name='balance_options_pv'),

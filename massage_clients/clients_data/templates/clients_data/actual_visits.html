@@ -29,10 +29,10 @@
                     <form method="GET" action="{% url 'actual_visits' %}">
                         <div class="col-12 col-md-4 py-1" style="display:inline-block">
                             <select class="form-select form-select-sm" name="ordering">
-                            <option value="name">По имени</option>
-                            <option value="visit_date">По дате</option>
-                            <option value="massage_type">По типу массажа</option>
-                            <option value="visit_price">По цене</option>
+                            <option value="name" {% if ordering == 'name' %} selected {% endif %}>По имени</option>
+                            <option value="visit_date" {% if ordering == 'visit_date' %} selected {% endif %}>По дате</option>
+                            <option value="massage_type" {% if ordering == 'massage_type' %} selected {% endif %}>По типу массажа</option>
+                            <option value="visit_price" {% if ordering == 'visit_price' %} selected {% endif %}>По цене</option>
                             </select>
                         </div>
                         <div class="col-12 col-md-4 py-1" style="display:inline-block">
@@ -78,17 +78,25 @@
                     <td class="text-left text-secondary">
                         {{ visit.client.age|default_if_none:" - " }}
                     </td>
-                    <td class="text-left text-secondary">
+                    <td class="text-left {% if visit.visit_date < current_date %} text-danger {% else %} text-secondary {% endif %}">
                         {{ visit.visit_date }}
                     </td>
                     <td class="text-left text-secondary">
                         {{ visit.visit_time }}
                     </td>
                     <td class="text-left text-secondary">
+                        {% if visit.massage_type|length > 0 %}
                         {{ visit.massage_type|default_if_none:" - " }}
+                        {% else %}
+                        -
+                        {% endif %}
                     </td>
                     <td class="text-left text-secondary">
-                        {{ visit.visit_price }} сом
+                        {% if visit.visit_price %}
+                        {{ visit.visit_price }}  сом
+                        {% else %}
+                        -
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -128,17 +136,25 @@
                     <td class="text-left text-secondary">
                         {{ visit.client.age|default_if_none:" - " }}
                     </td>
-                    <td class="text-left text-secondary">
+                    <td class="text-left {% if visit.visit_date < current_date %} text-danger {% else %} text-secondary {% endif %}">
                         {{ visit.visit_date }}
                     </td>
                     <td class="text-left text-secondary">
                         {{ visit.visit_time }}
                     </td>
                     <td class="text-left text-secondary">
+                        {% if visit.massage_type|length > 0 %}
                         {{ visit.massage_type|default_if_none:" - " }}
+                        {% else %}
+                        -
+                        {% endif %}
                     </td>
                     <td class="text-left text-secondary">
-                        {{ visit.visit_price }} сом
+                        {% if visit.visit_price %}
+                        {{ visit.visit_price }}  сом
+                        {% else %}
+                        -
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -172,17 +188,25 @@
             <td class="text-left text-secondary">
                {{ visit.client.age|default_if_none:" - " }}
             </td>
-            <td class="text-left text-secondary">
+            <td class="text-left {% if visit.visit_date < current_date %} text-danger {% else %} text-secondary {% endif %}">
                 {{ visit.visit_date }}
             </td>
             <td class="text-left text-secondary">
                 {{ visit.visit_time }}
             </td>
             <td class="text-left text-secondary">
+                {% if visit.massage_type|length > 0 %}
                 {{ visit.massage_type|default_if_none:" - " }}
+                {% else %}
+                -
+                {% endif %}
             </td>
             <td class="text-left text-secondary">
-                {{ visit.visit_price }} сом
+                {% if visit.visit_price %}
+                {{ visit.visit_price }}  сом
+                {% else %}
+                -
+                {% endif %}
             </td>
         </tr>
 

@@ -51,6 +51,7 @@
             </div>
         <div class="col-12 align-items-center text-center"> <p>
         <a href="{% url 'client_visits_edit_pv' pk=object.pk name=object.name %}" role="button" class="btn btn-primary w-45 mb-3">Изменить визиты</a>
+        <a href="{% url 'client_completed_visits_pv' pk=object.pk name=object.name %}" role="button" class="btn btn-secondary w-45 mb-3 mx-2">Прошлые визиты</a>
     </p>
 </div>
             </div>

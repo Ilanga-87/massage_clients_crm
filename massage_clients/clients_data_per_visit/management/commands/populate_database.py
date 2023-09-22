@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 visit_time = visit_date.time()
                 massage_type = random.choice(['Спина', 'Шея', 'Общий', 'Антицеллюлитный', 'Руки и плечи',
                                               'Грудной отдел', 'Ноги', 'Укрепляющий', 'Расслабляющий', 'Лимфодренажный'])
-                visit_price = random.randint(1000, 5000)
+                visit_price = random.randint(10, 50) * 100
                 today = datetime.datetime.today()
                 if visit_date < today:
                     client.balance += visit_price

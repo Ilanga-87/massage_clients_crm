@@ -29,9 +29,9 @@
                     <form method="GET" action="{% url 'client_completed_visits' pk=client.pk name=client.name %}">
                         <div class="col-12 col-md-4 py-1" style="display:inline-block">
                             <select class="form-select form-select-sm" name="ordering">
-                            <option value="visit_date">По дате</option>
-                            <option value="massage_type">По типу массажа</option>
-                            <option value="visit_price">По цене</option>
+                            <option value="visit_date" {% if ordering == 'visit_date' %} selected {% endif %}>По дате</option>
+                            <option value="massage_type" {% if ordering == 'massage_type' %} selected {% endif %}>По типу массажа</option>
+                            <option value="visit_price" {% if ordering == 'visit_price' %} selected {% endif %}>По цене</option>
                             </select>
                         </div>
                         <div class="col-12 col-md-4 py-1" style="display:inline-block">

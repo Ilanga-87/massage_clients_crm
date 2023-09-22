@@ -1,5 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
+from django.core.exceptions import ValidationError
 from django.utils import formats
 
 from .models import Client, Visit, Payment
@@ -45,7 +46,7 @@ class VisitForm(forms.ModelForm):
                 attrs={'type': 'date', }),
             'visit_time': forms.TimeInput(attrs={'type': 'time', }),
             'more_info': forms.Textarea(attrs={'rows': 2, 'cols': 4}),
-            'visit_price': forms.NumberInput(attrs={'step': 100})
+            'visit_price': forms.NumberInput(attrs={'step': 50})
         }
 
     def __init__(self, *args, **kwargs):
@@ -65,11 +66,11 @@ class PaymentForm(forms.ModelForm):
 
         labels = {
             'payment_date': 'Дата выплаты',
-            'pay_amount': 'Сумма выплаты'
+            'pay_amount': 'Сумма выплаты',
         }
 
         widgets = {
             'payment_date': forms.DateInput(
                 attrs={'type': 'date', }),
-            'pay_amount': forms.NumberInput(attrs={'step': 100})
+            'pay_amount': forms.NumberInput(attrs={'step': 50})
         }

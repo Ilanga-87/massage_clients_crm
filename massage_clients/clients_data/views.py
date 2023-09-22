@@ -138,6 +138,7 @@ class SingleClientCompletedVisits(RedirectPermissionRequiredMixin, ListView):
                 completed_visits = completed_visits.order_by('visit_price')
 
             context['object_list'] = completed_visits
+            context['ordering'] = ordering
         else:
             completed_visits = completed_visits
             if ordering == 'visit_date':
@@ -159,6 +160,7 @@ class SingleClientCompletedVisits(RedirectPermissionRequiredMixin, ListView):
                 completed_visits = completed_visits.order_by('visit_price')
 
             context['object_list'] = completed_visits
+            context['ordering'] = ordering
 
         return context
 
@@ -236,7 +238,17 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
             context['closest_visits'] = closest_visit_dict
 
             if ordering == 'name':
-                context['object_list'] = sorted(clients_to_display, key=lambda client: client.name)
+                object_list = sorted(clients_to_display, key=lambda client: client.name)
+                clients_by_letters = {}
+                for client in object_list:
+                    first_letter = client.client.name[0].upper()
+                    if first_letter.isalpha():
+                        if first_letter in clients_by_letters:
+                            clients_by_letters[first_letter].append(client)
+                        else:
+                            clients_by_letters[first_letter] = [client]
+
+                context['clients_by_letters'] = clients_by_letters
             else:
                 # Sort the clients based on their closest visit dates
                 sentinel_datetime = datetime(9999, 12, 31, tzinfo=timezone.utc)
@@ -247,10 +259,22 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
 
                 context['object_list'] = sorted_clients
 
+            context['ordering'] = ordering
+
         else:
             ordering = self.request.GET.get('ordering', 'closest_visit')  # Get the ordering parameter from the request
             if ordering == 'name':
-                context['object_list'] = self.model.objects.order_by('name')
+                object_list = self.model.objects.order_by('name')
+                clients_by_letters = {}
+                for client in object_list:
+                    first_letter = client.name[0].upper()
+                    if first_letter.isalpha():
+                        if first_letter in clients_by_letters:
+                            clients_by_letters[first_letter].append(client)
+                        else:
+                            clients_by_letters[first_letter] = [client]
+
+                context['clients_by_letters'] = clients_by_letters
             else:
                 # Sort the clients based on their closest visit dates
                 sentinel_datetime = datetime(9999, 12, 31, tzinfo=timezone.utc)
@@ -260,6 +284,8 @@ class AllClientsView(RedirectPermissionRequiredMixin, ListView):
                 )
 
                 context['object_list'] = sorted_clients
+
+            context['ordering'] = ordering
 
         return context
 
@@ -297,6 +323,11 @@ class ClientVisitsEditView(RedirectPermissionRequiredMixin, SingleObjectMixin, F
                     withdraw += visit_price
             self.object.deposit -= withdraw
             self.object.save()
+
+        else:
+            context = self.get_context_data()
+            context['form_errors'] = form.errors
+            return context
 
         form.save()
         return HttpResponseRedirect(self.get_success_url())
@@ -479,6 +510,7 @@ class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 context['visits_by_letter'] = visits_by_letter
 
             context['object_list'] = completed_visits
+            context['ordering'] = ordering
         else:
             completed_visits = self.model.objects.filter(completed=True)
             if ordering == 'visit_date':
@@ -512,6 +544,7 @@ class CompletedVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 context['visits_by_letter'] = visits_by_letter
 
             context['object_list'] = completed_visits
+            context['ordering'] = ordering
 
         return context
 
@@ -548,6 +581,8 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         ordering = self.request.GET.get('ordering')  # Get the ordering parameter from the request
         search_query = self.request.GET.get('search')  # Get the search query parameter from the request
+        current_date = datetime.today().date()
+        context['current_date'] = current_date
 
         # Filter by search query if it exists
         if search_query:
@@ -595,6 +630,7 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 context['visits_by_letter'] = visits_by_letter
 
             context['object_list'] = actual_visits
+            context['ordering'] = ordering
 
         # Sort by ordering if not search query
         else:
@@ -633,6 +669,7 @@ class ActualVisitsListView(RedirectPermissionRequiredMixin, ListView):
                 context['visits_by_letter'] = visits_by_letter
 
             context['object_list'] = actual_visits
+            context['ordering'] = ordering
 
         return context
 

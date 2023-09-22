@@ -1,13 +1,13 @@
-{% extends 'clients_data_per_visit/base.html' %}
-{% block title %} Архив визитов {% endblock %}
+{% extends 'clients_data/base.html' %}
+{% block title %} {{ client_name|title }} — архив визитов {% endblock %}
 
 {% block content %}
-  <h1>Завершенные визиты</h1>
+  <h1>{{ client_name|title }} — завершенные визиты</h1>
     <div class="d-flex align-items-left py-5">
       <div class="col-12 mx-auto">
           <div class="text-left">
           <div class="form-group d-grid gap-2 d-md-block">
-                    <form method="GET" action="{% url 'completed_visits_pv' %}">
+                    <form method="GET" action="{% url 'client_completed_visits_pv' pk=client.pk name=client.name %}">
                         <div class="col-12 col-md-4 py-1" style="display:inline-block">
                           <input type="text" name="search" class="form-control" placeholder="Поиск" value="{{ request.GET.search }}">
                         </div>
@@ -17,7 +17,7 @@
                         </div>
                                         {% if request.GET.search %}
                   <div class="col-12 col-md-2 py-1" style="display:inline-block">
-                    <a href="{% url 'completed_visits_pv' %}" class="btn btn-secondary">Очистить</a>
+                    <a href="{% url 'client_completed_visits_pv' pk=client.pk name=client.name %}" class="btn btn-secondary">Очистить</a>
                   </div>
                 {% endif %}
                     </form>
@@ -26,10 +26,9 @@
           <div class="row">
             <div class="col-12">
                 <div class="form-group">
-                    <form method="GET" action="{% url 'completed_visits_pv' %}">
+                    <form method="GET" action="{% url 'client_completed_visits_pv' pk=client.pk name=client.name %}">
                         <div class="col-12 col-md-4 py-1" style="display:inline-block">
                             <select class="form-select form-select-sm" name="ordering">
-                            <option value="name" {% if ordering == 'name' %} selected {% endif %}>По имени</option>
                             <option value="visit_date" {% if ordering == 'visit_date' %} selected {% endif %}>По дате</option>
                             <option value="massage_type" {% if ordering == 'massage_type' %} selected {% endif %}>По типу массажа</option>
                             <option value="visit_price" {% if ordering == 'visit_price' %} selected {% endif %}>По цене</option>
@@ -85,18 +84,10 @@
                         {{ visit.visit_time }}
                     </td>
                     <td class="text-left text-secondary">
-                        {% if visit.massage_type|length > 0 %}
-                        {{ visit.massage_type }}
-                        {% else %}
-                        -
-                        {% endif %}
+                        {{ visit.massage_type|default_if_none:" - " }}
                     </td>
                     <td class="text-left text-secondary">
-                        {% if visit.visit_price %}
-                        {{ visit.visit_price }}  сом
-                        {% else %}
-                        -
-                        {% endif %}
+                        {{ visit.visit_price }} сом
                     </td>
                 </tr>
                 {% endfor %}
@@ -143,18 +134,10 @@
                         {{ visit.visit_time }}
                     </td>
                     <td class="text-left text-secondary">
-                        {% if visit.massage_type|length > 0 %}
-                        {{ visit.massage_type }}
-                        {% else %}
-                        -
-                        {% endif %}
+                        {{ visit.massage_type|default_if_none:" - " }}
                     </td>
                     <td class="text-left text-secondary">
-                         {% if visit.visit_price %}
-                        {{ visit.visit_price }}  сом
-                        {% else %}
-                        -
-                        {% endif %}
+                        {{ visit.visit_price }} сом
                     </td>
                 </tr>
                 {% endfor %}
@@ -195,18 +178,10 @@
                 {{ visit.visit_time }}
             </td>
             <td class="text-left text-secondary">
-                {% if visit.massage_type|length > 0 %}
-                {{ visit.massage_type }}
-                {% else %}
-                -
-                {% endif %}
+                {{ visit.massage_type|default_if_none:" - " }}
             </td>
             <td class="text-left text-secondary">
-                {% if visit.visit_price %}
-                {{ visit.visit_price }}  сом
-                {% else %}
-                -
-                {% endif %}
+                {{ visit.visit_price }} сом
             </td>
         </tr>
 

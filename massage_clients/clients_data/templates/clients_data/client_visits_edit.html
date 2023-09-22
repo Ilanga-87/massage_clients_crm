@@ -23,6 +23,7 @@
 
     {{ form.management_form }}
     {{ form.non_form_errors }}
+    {{ form.form_errors }}
 
       <h3>{{ client.name|title }}: добавление визитов</h3>
     {% for visit_form in form.forms %}

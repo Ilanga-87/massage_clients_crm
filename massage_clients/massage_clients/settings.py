@@ -47,12 +47,14 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'crispy_forms',
     'crispy_bootstrap4',
+    'crispy_bootstrap5',
 
     'clients_data',
     'clients_data_per_visit',
 ]
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+CRISPY_FAIL_SILENTLY = not DEBUG
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
